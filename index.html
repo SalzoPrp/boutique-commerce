@@ -2,117 +2,245 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Notre Boutique | Shopping en ligne</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COREVA | Boutique en ligne</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--dark:#17233b;--blue:#2563eb;--light:#f4f6fa}
+:root{--or:#e7b854;--noir:#080808}
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;color:var(--dark);background:var(--light)}
-header{background:white;padding:18px 5%;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
-.logo{font-size:24px;font-weight:800}
-button{cursor:pointer;border:0;border-radius:8px;padding:12px 16px;font-weight:bold}
-.primary{background:var(--blue);color:white}
-nav{background:var(--dark);color:white;padding:14px 5%;display:flex;gap:20px;flex-wrap:wrap}
-.hero{background:linear-gradient(120deg,#14213d,#305fc1);color:white;padding:65px 6%;text-align:center}
-.hero h1{font-size:clamp(30px,5vw,52px);margin:0 0 15px}
-.hero p{font-size:18px}
-.container{max-width:1200px;margin:auto;padding:30px 20px}
-.search{width:100%;padding:15px;border:1px solid #ddd;border-radius:9px;font-size:16px}
-.categories{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
-.categories button{background:white;border:1px solid #ddd}
-.categories button.active{background:var(--dark);color:white}
-.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
-.product{background:white;border-radius:12px;padding:18px;box-shadow:0 3px 12px #0000000d}
-.picture{height:150px;background:#edf2fa;border-radius:8px;display:grid;place-items:center;font-size:65px}
-.product h3{margin-bottom:8px}
-.price{font-size:22px;font-weight:bold;color:var(--blue)}
-.product button{width:100%}
-.cart{background:white;padding:20px;border-radius:12px;margin-top:30px}
-.cart-item{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #ddd}
-footer{background:var(--dark);color:white;padding:30px;text-align:center;margin-top:35px}
-.small{color:#64748b;font-size:13px}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Montserrat,Arial,sans-serif;color:#171717}
+button,input{font:inherit}
+button{cursor:pointer}
+a{text-decoration:none;color:inherit}
+header{background:#050505;color:white}
+.entete{max-width:1600px;margin:auto;display:flex;align-items:center;gap:35px;padding:16px 35px}
+.marque{width:260px;text-align:center;color:var(--or);flex-shrink:0}
+.embleme{display:block;width:75px;height:70px;margin:auto}
+.marque strong{font:700 43px "Cormorant Garamond",Georgia,serif;letter-spacing:2px}
+.recherche{display:flex;flex:1;background:white;border-radius:12px;overflow:hidden;height:55px}
+.recherche input{border:0;outline:0;flex:1;min-width:0;padding:0 20px;font-size:14px}
+.recherche button{border:0;background:var(--or);padding:0 22px;font-size:26px}
+.outils{display:flex;gap:30px;align-items:center}
+.outils button{background:none;border:0;color:white;display:flex;flex-direction:column;align-items:center;gap:5px;white-space:nowrap;font-size:12px}
+.outils .sym{font-size:29px}
+nav{background:#171717;border-top:1px solid #292929}
+.menu{max-width:1600px;margin:auto;display:flex;align-items:center;gap:25px;padding:0 20px;overflow-x:auto;white-space:nowrap;scrollbar-width:thin}
+.menu a{font-size:12px;font-weight:600;padding:18px 0}
+.menu a:hover{color:var(--or)}
+.menu .toutes{background:var(--or);color:black;padding:19px 25px;border-radius:8px 8px 0 0}
+.hero{height:370px;position:relative;overflow:hidden;background:#17110b}
+.hero-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,#000 0%,#000e 28%,#0008 49%,transparent 90%)}
+.hero-content{position:relative;z-index:2;max-width:1500px;margin:auto;padding:38px 9%;color:white}
+.hero-content h2{font-size:clamp(24px,3vw,43px);font-weight:600;margin:0}
+.hero-content h1{font:700 clamp(57px,7vw,100px) "Cormorant Garamond",Georgia,serif;color:var(--or);line-height:1;margin:0}
+.hero-content .trait{width:95px;height:3px;background:var(--or);margin:10px 0 17px}
+.hero-content p{font-size:18px;line-height:1.5;max-width:320px}
+.btn-or{background:var(--or);border:0;border-radius:9px;padding:16px 24px;font-weight:700;display:inline-block;margin-top:8px}
+.btn-or:hover{background:#ffd37a}
+.hero-decor{position:absolute;right:7%;top:12%;height:80%;width:42%;z-index:1;pointer-events:none}
+.hero-decor .laptop{position:absolute;right:10%;top:23%;font-size:115px;filter:drop-shadow(0 10px 15px #000)}
+.hero-decor .headphone{position:absolute;left:4%;top:10%;font-size:105px;filter:drop-shadow(0 10px 15px #000)}
+.hero-decor .bag{position:absolute;right:4%;bottom:0;background:#141414;border:2px solid #b78b3d;color:var(--or);width:130px;height:145px;text-align:center;padding-top:30px;font:700 75px "Cormorant Garamond",serif;box-shadow:0 15px 30px #0008}
+.hero-decor .bag:before{content:"";position:absolute;top:-27px;left:43px;width:42px;height:32px;border:5px solid var(--or);border-bottom:0;border-radius:35px 35px 0 0}
+.avantages{display:grid;grid-template-columns:repeat(5,1fr);gap:0;max-width:1550px;margin:auto;padding:22px 20px}
+.avantage{display:flex;align-items:center;justify-content:center;gap:12px;border-right:1px solid #ddd;padding:6px 12px}
+.avantage:last-child{border:0}
+.avantage .picto{font-size:28px}
+.avantage strong{display:block;font-size:12px}
+.avantage small{font-size:10px;color:#666}
+main{max-width:1550px;margin:auto;padding:10px 25px 60px}
+.titre{display:flex;align-items:center;justify-content:center;gap:20px;margin:22px 0 32px}
+.titre h2{font-size:30px;margin:0}
+.titre span{height:2px;background:var(--or);width:100px}
+.categories{display:grid;grid-template-columns:repeat(7,1fr);gap:14px}
+.categorie{border-radius:14px;overflow:hidden;position:relative;cursor:pointer;height:160px;background:#222}
+.categorie img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.categorie:hover img{transform:scale(1.06)}
+.categorie strong{position:absolute;bottom:0;left:0;right:0;background:#111e;color:white;padding:12px 4px;text-align:center;font-size:12px}
+.section-produits{padding-top:40px}
+.filtres{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:25px}
+.filtres button{background:#fff;border:1px solid #ddd;padding:10px 15px;border-radius:20px}
+.filtres button.actif{background:#111;color:white;border-color:#111}
+.produits{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.produit{border:1px solid #eee;border-radius:12px;overflow:hidden}
+.produit img{width:100%;height:210px;object-fit:cover}
+.produit .infos{padding:15px}
+.produit h3{font-size:15px;margin:0 0 10px}
+.produit p{font-size:12px;color:#777}
+.produit button{background:#111;color:white;border:0;padding:12px;width:100%;border-radius:5px}
+.information{margin:45px 0 0;background:#f8f6f1;padding:25px;border-radius:12px;text-align:center;line-height:1.7;font-size:13px}
+footer{background:#111;color:white;padding:40px 25px}
+.pied{max-width:1300px;margin:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+footer h3{color:var(--or)}
+footer p{font-size:13px;line-height:1.9;color:#ccc}
+@media(max-width:1100px){
+.entete{gap:15px}
+.marque{width:160px}
+.marque strong{font-size:31px}
+.categories{grid-template-columns:repeat(4,1fr)}
+.produits{grid-template-columns:repeat(3,1fr)}
+.avantages{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:700px){
+.entete{flex-wrap:wrap;padding:12px}
+.marque{width:auto}
+.marque strong{font-size:26px}
+.embleme{width:45px;height:45px}
+.outils{margin-left:auto;gap:10px}
+.outils button{font-size:10px}
+.outils .sym{font-size:22px}
+.recherche{order:3;flex-basis:100%;height:45px}
+.menu{gap:18px}
+.menu a{font-size:11px}
+.hero{height:350px}
+.hero-content{padding:45px 22px}
+.hero-content p{font-size:14px;max-width:240px}
+.hero-decor{opacity:.45;right:-15%;width:65%}
+.hero-decor .laptop{font-size:70px}
+.hero-decor .headphone{font-size:65px}
+.hero-decor .bag{transform:scale(.65)}
+.avantages{grid-template-columns:repeat(2,1fr)}
+.avantage{justify-content:flex-start}
+.categories{grid-template-columns:repeat(2,1fr);gap:10px}
+.categorie{height:160px}
+.produits{grid-template-columns:repeat(2,1fr);gap:10px}
+.produit img{height:150px}
+.titre h2{font-size:24px}
+.titre span{width:35px}
+.pied{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 <header>
-<div class="logo">NOTRE BOUTIQUE</div>
-<button class="primary" onclick="document.getElementById('panier').scrollIntoView()">🛒 Panier <span id="count">0</span></button>
+<div class="entete">
+<a class="marque" href="#">
+<svg class="embleme" viewBox="0 0 100 100">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0b3"/><stop offset=".5" stop-color="#c08a28"/><stop offset="1" stop-color="#f3ca73"/></linearGradient></defs>
+<path d="M80 18C63 6 35 10 21 31C5 56 21 83 46 87C63 90 77 81 86 68" fill="none" stroke="url(#g)" stroke-width="9" stroke-linecap="round"/>
+<path d="M37 42H73L77 73H33Z" fill="none" stroke="url(#g)" stroke-width="4"/>
+<path d="M45 42V33C45 19 65 19 65 33V42" fill="none" stroke="url(#g)" stroke-width="4"/>
+<path d="M15 77C42 90 67 84 91 61" fill="none" stroke="url(#g)" stroke-width="5"/>
+</svg>
+<strong>COREVA</strong>
+</a>
+<div class="recherche">
+<input id="recherche" placeholder="Rechercher un produit, une marque, une catégorie..." oninput="afficherProduits()">
+<button aria-label="Rechercher" onclick="afficherProduits()">⌕</button>
+</div>
+<div class="outils">
+<button onclick="alert('Espace client en préparation')"><span class="sym">♙</span>Mon compte</button>
+<button onclick="alert('Favoris en préparation')"><span class="sym">♡</span>Favoris</button>
+<button onclick="alert('Le panier sera disponible à l’ouverture')"><span class="sym">🛒</span>Panier</button>
+</div>
+</div>
+<nav><div class="menu">
+<a class="toutes" href="#categories">☰ Toutes les catégories</a>
+<a href="#categories">Maison & Déco</a>
+<a href="#categories">Bricolage & Jardin</a>
+<a href="#categories">Électronique</a>
+<a href="#categories">Mode & Accessoires</a>
+<a href="#categories">Beauté & Bien-être</a>
+<a href="#categories">Sport & Loisirs</a>
+<a href="#categories">Auto & Moto</a>
+</div></nav>
 </header>
-<nav>
-<span>Maison</span><span>Mode</span><span>Bricolage</span>
-<span>Jardin</span><span>Accessoires</span>
-</nav>
+
 <section class="hero">
-<h1>Découvrez nos meilleures sélections</h1>
-<p>Maison, mode, accessoires et bien plus encore.</p>
-<button onclick="document.getElementById('catalogue').scrollIntoView()">Découvrir les produits</button>
+<img class="hero-image" src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1800&q=85" alt="Salon élégant COREVA">
+<div class="hero-overlay"></div>
+<div class="hero-decor" aria-hidden="true">
+<span class="headphone">🎧</span>
+<span class="laptop">💻</span>
+<div class="bag">C</div>
+</div>
+<div class="hero-content">
+<h2>Bienvenue chez</h2>
+<h1>COREVA</h1>
+<div class="trait"></div>
+<p>Votre boutique en ligne<br>pour tous vos besoins</p>
+<a class="btn-or" href="#categories">Découvrir la boutique ❯</a>
+</div>
 </section>
-<main class="container" id="catalogue">
-<h2>Notre catalogue</h2>
-<input class="search" id="search" placeholder="Rechercher un produit..." oninput="render()">
-<div class="categories" id="categories"></div>
-<div class="products" id="products"></div>
-<section class="cart" id="panier">
-  <h2>🛒 Mon panier</h2>
-  <div id="cartItems">Votre panier est vide.</div>
-  <h3>Total : <span id="total">0,00 €</span></h3>
-  <p class="small">Version de démonstration : aucun paiement n'est encore disponible.</p>
-  <button class="primary" disabled>Paiement bientôt disponible</button>
+
+<section class="avantages">
+<div class="avantage"><span class="picto">🚚</span><div><strong>Livraison</strong><small>Belgique et Europe selon les articles</small></div></div>
+<div class="avantage"><span class="picto">♢</span><div><strong>Paiement sécurisé</strong><small>À activer avant ouverture</small></div></div>
+<div class="avantage"><span class="picto">↻</span><div><strong>Retours</strong><small>Conditions à publier</small></div></div>
+<div class="avantage"><span class="picto">♧</span><div><strong>Service client</strong><small>À votre écoute prochainement</small></div></div>
+<div class="avantage"><span class="picto">✧</span><div><strong>Produits de qualité</strong><small>Sélection en préparation</small></div></div>
 </section>
+
+<main>
+<div class="titre" id="categories"><span></span><h2>Nos catégories</h2><span></span></div>
+<div class="categories" id="listeCategories"></div>
+
+<section class="section-produits" id="produits">
+<div class="titre"><span></span><h2>Découvrez nos univers</h2><span></span></div>
+<div class="filtres" id="filtres"></div>
+<div class="produits" id="listeProduits"></div>
+</section>
+
+<div class="information">
+<h3>Bienvenue chez COREVA</h3>
+<p>Notre boutique est en cours de préparation. Les images et les articles sont des exemples de présentation. Les commandes et paiements ne sont pas encore disponibles.</p>
+</div>
 </main>
+
 <footer>
-<p>Notre Boutique — Projet e-commerce en préparation</p>
-<p>Livraison, retours et service client : informations à venir.</p>
+<div class="pied">
+<div><h3>COREVA</h3><p>Votre boutique en ligne pour tous vos besoins.</p></div>
+<div><h3>Informations</h3><p>Livraison<br>Retours<br>Conditions générales<br>Confidentialité</p></div>
+<div><h3>Service client</h3><p>Contact prochainement disponible.<br>Belgique</p></div>
+</div>
 </footer>
+
 <script>
-const products=[
-{id:1,name:"Sac tendance",category:"Mode",price:29.90,emoji:"👜"},
-{id:2,name:"Lampe décorative",category:"Maison",price:39.90,emoji:"💡"},
-{id:3,name:"Boîte à outils",category:"Bricolage",price:49.90,emoji:"🧰"},
-{id:4,name:"Accessoire de jardin",category:"Jardin",price:24.90,emoji:"🌱"},
-{id:5,name:"Montre classique",category:"Accessoires",price:59.90,emoji:"⌚"},
-{id:6,name:"Veste décontractée",category:"Mode",price:69.90,emoji:"🧥"}
+const categories=[
+{nom:"Maison & Déco",image:"photo-1600210492486-724fe5c67fb0"},
+{nom:"Bricolage & Jardin",image:"photo-1416879595882-3373a0480b5b"},
+{nom:"Électronique",image:"photo-1505740420928-5e560c06d30e"},
+{nom:"Mode & Accessoires",image:"photo-1483985988355-763728e1935b"},
+{nom:"Beauté & Bien-être",image:"photo-1596462502278-27bfdc403348"},
+{nom:"Sport & Loisirs",image:"photo-1517836357463-d25dfeac3438"},
+{nom:"Auto & Moto",image:"photo-1492144534655-ae79c964c9d7"}
 ];
-let category="Tous";
-let cart=[];
-const euro=n=>new Intl.NumberFormat("fr-BE",{style:"currency",currency:"EUR"}).format(n);
-function setCategory(c){category=c;render()}
-function render(){
-const cats=["Tous",...new Set(products.map(p=>p.category))];
-document.getElementById("categories").innerHTML=cats.map(c=>
-`<button class="${category===c?'active':''}" onclick="setCategory('${c}')">${c}</button>`).join("");
-const q=document.getElementById("search").value.toLowerCase();
-const filtered=products.filter(p=>(category==="Tous"||p.category===category)&&p.name.toLowerCase().includes(q));
-document.getElementById("products").innerHTML=filtered.map(p=>`
-<article class="product">
-  <div class="picture">${p.emoji}</div>
-  <h3>${p.name}</h3>
-  <p class="price">${euro(p.price)}</p>
-  <button class="primary" onclick="add(${p.id})">Ajouter au panier</button>
-</article>`).join("")||"<p>Aucun produit trouvé.</p>";
+let filtre="Tous";
+function photo(id){return "https://images.unsplash.com/"+id+"?auto=format&fit=crop&w=700&q=85"}
+function afficherCategories(){
+document.getElementById("listeCategories").innerHTML=categories.map((c,i)=>
+`<div class="categorie" onclick="choisir(${i})"><img src="${photo(c.image)}" alt="${c.nom}" loading="lazy"><strong>${c.nom}</strong></div>`
+).join("");
 }
-function add(id){
-const item=cart.find(x=>x.id===id);
-if(item)item.qty++;
-else cart.push({id,qty:1});
-renderCart();
+function choisir(i){
+filtre=categories[i].nom;
+afficherFiltres();
+afficherProduits();
+document.getElementById("produits").scrollIntoView({behavior:"smooth"});
 }
-function removeItem(id){
-cart=cart.filter(x=>x.id!==id);
-renderCart();
+function afficherFiltres(){
+let noms=["Tous",...categories.map(c=>c.nom)];
+document.getElementById("filtres").innerHTML=noms.map(n=>
+`<button class="${filtre===n?'actif':''}" onclick="filtrer(this)">${n}</button>`
+).join("");
 }
-function renderCart(){
-let total=0,count=0;
-document.getElementById("cartItems").innerHTML=cart.length?cart.map(item=>{
-const p=products.find(x=>x.id===item.id);
-total+=p.price*item.qty;count+=item.qty;
-return `<div class="cart-item"><span>${p.name} × ${item.qty}</span><span>${euro(p.price*item.qty)} <button onclick="removeItem(${item.id})">Retirer</button></span></div>`;
-}).join(""):"Votre panier est vide.";
-document.getElementById("total").textContent=euro(total);
-document.getElementById("count").textContent=count;
+function filtrer(b){
+filtre=b.textContent;
+afficherFiltres();
+afficherProduits();
 }
-render();
-renderCart();
+function afficherProduits(){
+let q=document.getElementById("recherche").value.toLowerCase().trim();
+let liste=categories.filter(c=>(filtre==="Tous"||filtre===c.nom)&&c.nom.toLowerCase().includes(q));
+document.getElementById("listeProduits").innerHTML=liste.length?liste.map(c=>
+`<div class="produit"><img src="${photo(c.image)}" alt="${c.nom}" loading="lazy"><div class="infos"><h3>${c.nom}</h3><p>Découvrez prochainement notre sélection.</p><button onclick="alert('Catalogue en préparation')">Découvrir prochainement</button></div></div>`
+).join(""):"<p>Aucun résultat trouvé.</p>";
+}
+afficherCategories();
+afficherFiltres();
+afficherProduits();
 </script>
 </body>
 </html>
