@@ -1,0 +1,122 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notre Boutique | Shopping en ligne</title>
+<style>
+:root{--dark:#17233b;--blue:#2563eb;--light:#f4f6fa}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;color:var(--dark);background:var(--light)}
+header{background:white;padding:18px 5%;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.logo{font-size:24px;font-weight:800}
+button{cursor:pointer;border:0;border-radius:8px;padding:12px 16px;font-weight:bold}
+.primary{background:var(--blue);color:white}
+nav{background:var(--dark);color:white;padding:14px 5%;display:flex;gap:20px;flex-wrap:wrap}
+.hero{background:linear-gradient(120deg,#14213d,#305fc1);color:white;padding:65px 6%;text-align:center}
+.hero h1{font-size:clamp(30px,5vw,52px);margin:0 0 15px}
+.hero p{font-size:18px}
+.container{max-width:1200px;margin:auto;padding:30px 20px}
+.search{width:100%;padding:15px;border:1px solid #ddd;border-radius:9px;font-size:16px}
+.categories{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
+.categories button{background:white;border:1px solid #ddd}
+.categories button.active{background:var(--dark);color:white}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.product{background:white;border-radius:12px;padding:18px;box-shadow:0 3px 12px #0000000d}
+.picture{height:150px;background:#edf2fa;border-radius:8px;display:grid;place-items:center;font-size:65px}
+.product h3{margin-bottom:8px}
+.price{font-size:22px;font-weight:bold;color:var(--blue)}
+.product button{width:100%}
+.cart{background:white;padding:20px;border-radius:12px;margin-top:30px}
+.cart-item{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #ddd}
+footer{background:var(--dark);color:white;padding:30px;text-align:center;margin-top:35px}
+.small{color:#64748b;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">NOTRE BOUTIQUE</div>
+<button class="primary" onclick="document.getElementById('panier').scrollIntoView()">🛒 Panier <span id="count">0</span></button>
+</header>
+<nav>
+<span>Maison</span><span>Mode</span><span>Bricolage</span>
+<span>Jardin</span><span>Accessoires</span>
+</nav>
+<section class="hero">
+<h1>Découvrez nos meilleures sélections</h1>
+<p>Maison, mode, accessoires et bien plus encore.</p>
+<button onclick="document.getElementById('catalogue').scrollIntoView()">Découvrir les produits</button>
+</section>
+<main class="container" id="catalogue">
+<h2>Notre catalogue</h2>
+<input class="search" id="search" placeholder="Rechercher un produit..." oninput="render()">
+<div class="categories" id="categories"></div>
+<div class="products" id="products"></div>
+<section class="cart" id="panier">
+  <h2>🛒 Mon panier</h2>
+  <div id="cartItems">Votre panier est vide.</div>
+  <h3>Total : <span id="total">0,00 €</span></h3>
+  <p class="small">Version de démonstration : aucun paiement n'est encore disponible.</p>
+  <button class="primary" disabled>Paiement bientôt disponible</button>
+</section>
+</main>
+<footer>
+<p>Notre Boutique — Projet e-commerce en préparation</p>
+<p>Livraison, retours et service client : informations à venir.</p>
+</footer>
+<script>
+const products=[
+{id:1,name:"Sac tendance",category:"Mode",price:29.90,emoji:"👜"},
+{id:2,name:"Lampe décorative",category:"Maison",price:39.90,emoji:"💡"},
+{id:3,name:"Boîte à outils",category:"Bricolage",price:49.90,emoji:"🧰"},
+{id:4,name:"Accessoire de jardin",category:"Jardin",price:24.90,emoji:"🌱"},
+{id:5,name:"Montre classique",category:"Accessoires",price:59.90,emoji:"⌚"},
+{id:6,name:"Veste décontractée",category:"Mode",price:69.90,emoji:"🧥"}
+];
+let category="Tous";
+let cart=[];
+const euro=n=>new Intl.NumberFormat("fr-BE",{style:"currency",currency:"EUR"}).format(n);
+function setCategory(c){category=c;render()}
+function render(){
+const cats=["Tous",...new Set(products.map(p=>p.category))];
+document.getElementById("categories").innerHTML=cats.map(c=>
+`<button class="${category===c?'active':''}" onclick="setCategory('${c}')">${c}</button>`).join("");
+const q=document.getElementById("search").value.toLowerCase();
+const filtered=products.filter(p=>(category==="Tous"||p.category===category)&&p.name.toLowerCase().includes(q));
+document.getElementById("products").innerHTML=filtered.map(p=>`
+<article class="product">
+  <div class="picture">${p.emoji}</div>
+  <h3>${p.name}</h3>
+  <p class="price">${euro(p.price)}</p>
+  <button class="primary" onclick="add(${p.id})">Ajouter au panier</button>
+</article>`).join("")||"<p>Aucun produit trouvé.</p>";
+}
+function add(id){
+const item=cart.find(x=>x.id===id);
+if(item)item.qty++;
+else cart.push({id,qty:1});
+renderCart();
+}
+function removeItem(id){
+cart=cart.filter(x=>x.id!==id);
+renderCart();
+}
+function renderCart(){
+let total=0,count=0;
+document.getElementById("cartItems").innerHTML=cart.length?cart.map(item=>{
+const p=products.find(x=>x.id===item.id);
+total+=p.price*item.qty;count+=item.qty;
+return `<div class="cart-item"><span>${p.name} × ${item.qty}</span><span>${euro(p.price*item.qty)} <button onclick="removeItem(${item.id})">Retirer</button></span></div>`;
+}).join(""):"Votre panier est vide.";
+document.getElementById("total").textContent=euro(total);
+document.getElementById("count").textContent=count;
+}
+render();
+renderCart();
+</script>
+</body>
+</html>
