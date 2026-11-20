@@ -247,7 +247,15 @@
         return [];
       }
     }
-
+const catalogue = [
+  {id:1, nom:"Lampe décorative", prix:29.90},
+  {id:2, nom:"Accessoire de jardinage", prix:18.90},
+  {id:3, nom:"Casque audio", prix:39.90},
+  {id:4, nom:"Sac élégant", prix:49.90},
+  {id:5, nom:"Coffret beauté", prix:24.90},
+  {id:6, nom:"Équipement fitness", prix:34.90},
+  {id:7, nom:"Accessoire automobile", prix:19.90}
+];
     const panier = chargerPanier();
     let montant = 0;
     let panierValide = panier.length > 0;
@@ -256,8 +264,10 @@
       articles.textContent = "Votre panier est vide.";
     } else {
       panier.forEach(produit => {
-        const nom = String(produit.nom || "Article");
-        const prix = Number(produit.prix);
+        const article = catalogue.find(p => p.id === Number(produit.id));
+const nom = article ? article.nom : "Article";
+        const prix = article ? article.prix : NaN;
+
         const quantite = Number(produit.qty);
 
         if (
