@@ -1,0 +1,307 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finaliser ma commande | CORVIANE</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .checkout-page {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+      font-family: inherit;
+    }
+    .checkout-page * { box-sizing: border-box; }
+    .checkout-page h1 { margin-bottom: 12px; }
+    .checkout-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+      gap: 24px;
+      margin-top: 25px;
+    }
+    .checkout-panel {
+      padding: 24px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #fff;
+      color: #222;
+    }
+    .checkout-panel h2 {
+      font-size: 20px;
+      margin: 0 0 20px;
+    }
+    .checkout-field { margin-bottom: 16px; }
+    .checkout-field label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .checkout-field input,
+    .checkout-field select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      font: inherit;
+      background: #fff;
+      color: #222;
+    }
+    .checkout-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .checkout-summary-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .checkout-total {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .checkout-button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 20px;
+      border: 0;
+      border-radius: 8px;
+      background: #222;
+      color: #fff;
+      font: inherit;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .checkout-button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+    .checkout-note {
+      font-size: 13px;
+      line-height: 1.6;
+      margin-top: 15px;
+    }
+    .checkout-error { color: #b00020; }
+    @media (max-width: 750px) {
+      .checkout-layout { grid-template-columns: 1fr; }
+      .checkout-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="checkout-page">
+    <h1>Finaliser ma commande</h1>
+    <p>Complétez vos informations pour préparer votre commande.</p>
+
+    <div class="checkout-layout">
+      <section class="checkout-panel">
+        <h2>Informations de livraison</h2>
+
+        <form id="checkoutForm">
+          <div class="checkout-row">
+            <div class="checkout-field">
+              <label for="prenom">Prénom *</label>
+              <input id="prenom" name="prenom"
+                     autocomplete="given-name" required>
+            </div>
+            <div class="checkout-field">
+              <label for="nom">Nom *</label>
+              <input id="nom" name="nom"
+                     autocomplete="family-name" required>
+            </div>
+          </div>
+
+          <div class="checkout-field">
+            <label for="email">Adresse e-mail *</label>
+            <input type="email" id="email" name="email"
+                   autocomplete="email" required>
+          </div>
+
+          <div class="checkout-field">
+            <label for="telephone">Téléphone *</label>
+            <input type="tel" id="telephone" name="telephone"
+                   autocomplete="tel" required>
+          </div>
+
+          <div class="checkout-field">
+            <label for="adresse">Rue et numéro *</label>
+            <input id="adresse" name="adresse"
+                   autocomplete="street-address" required>
+          </div>
+
+          <div class="checkout-row">
+            <div class="checkout-field">
+              <label for="codePostal">Code postal *</label>
+              <input id="codePostal" name="codePostal"
+                     autocomplete="postal-code" required>
+            </div>
+            <div class="checkout-field">
+              <label for="ville">Ville *</label>
+              <input id="ville" name="ville"
+                     autocomplete="address-level2" required>
+            </div>
+          </div>
+
+          <div class="checkout-field">
+            <label for="pays">Pays de livraison *</label>
+            <select id="pays" name="pays" required>
+              <option value="BE">Belgique</option>
+              <option value="FR">France</option>
+              <option value="NL">Pays-Bas</option>
+              <option value="DE">Allemagne</option>
+              <option value="LU">Luxembourg</option>
+            </select>
+          </div>
+
+          <div class="checkout-field">
+            <label for="livraison">Mode de livraison</label>
+            <select id="livraison" name="livraison">
+              <option value="standard">Livraison standard</option>
+            </select>
+          </div>
+
+          <div class="checkout-field">
+            <label for="paiement">Mode de paiement</label>
+            <select id="paiement" name="paiement">
+              <option value="bancontact">Bancontact</option>
+              <option value="carte">Carte bancaire</option>
+            </select>
+          </div>
+
+          <div class="checkout-field">
+            <label>
+              <input type="checkbox" id="conditions" required>
+              J'accepte les conditions générales de vente *
+            </label>
+          </div>
+
+          <button type="submit" class="checkout-button"
+                  id="commander" disabled>
+            Continuer vers le paiement
+          </button>
+
+          <p class="checkout-note">
+            Paiement sécurisé : la connexion au prestataire
+            de paiement sera activée ultérieurement.
+            Aucun paiement n'est actuellement encaissé.
+          </p>
+          <p id="checkoutMessage" role="status"></p>
+        </form>
+      </section>
+
+      <aside class="checkout-panel">
+        <h2>Récapitulatif de commande</h2>
+        <div id="checkoutArticles"></div>
+
+        <div class="checkout-summary-line">
+          <span>Sous-total</span>
+          <strong id="sousTotal">0,00 €</strong>
+        </div>
+
+        <div class="checkout-summary-line">
+          <span>Livraison</span>
+          <span>À calculer</span>
+        </div>
+
+        <div class="checkout-summary-line checkout-total">
+          <span>Total provisoire</span>
+          <span id="total">0,00 €</span>
+        </div>
+
+        <p class="checkout-note">
+          Le montant définitif sera confirmé après
+          calcul des frais de livraison et des taxes.
+        </p>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    "use strict";
+
+    const form = document.getElementById("checkoutForm");
+    const message = document.getElementById("checkoutMessage");
+    const articles = document.getElementById("checkoutArticles");
+    const sousTotal = document.getElementById("sousTotal");
+    const total = document.getElementById("total");
+
+    const euros = montant =>
+      new Intl.NumberFormat("fr-BE", {
+        style: "currency",
+        currency: "EUR"
+      }).format(montant);
+
+    // À adapter à la structure réelle du panier CORVIANE.
+    // Ne pas utiliser les prix du navigateur pour encaisser.
+    function chargerPanier() {
+      try {
+        const panier = JSON.parse(
+          localStorage.getItem("corviane_panier") || "[]"
+        );
+        return Array.isArray(panier) ? panier : [];
+      } catch {
+        return [];
+      }
+    }
+
+    const panier = chargerPanier();
+    let montant = 0;
+    let panierValide = panier.length > 0;
+
+    if (panier.length === 0) {
+      articles.textContent = "Votre panier est vide.";
+    } else {
+      panier.forEach(produit => {
+        const nom = String(produit.nom || "Article");
+        const prix = Number(produit.prix);
+        const quantite = Number(produit.quantite);
+
+        if (
+          !Number.isFinite(prix) || prix < 0 ||
+          !Number.isSafeInteger(quantite) || quantite < 1
+        ) {
+          panierValide = false;
+          return;
+        }
+
+        montant += prix * quantite;
+
+        const ligne = document.createElement("div");
+        ligne.className = "checkout-summary-line";
+
+        const description = document.createElement("span");
+        description.textContent = nom + " × " + quantite;
+
+        const valeur = document.createElement("strong");
+        valeur.textContent = euros(prix * quantite);
+
+        ligne.append(description, valeur);
+        articles.appendChild(ligne);
+      });
+    }
+
+    sousTotal.textContent = euros(montant);
+    total.textContent = euros(montant);
+
+    if (!panierValide) {
+      message.textContent = panier.length
+        ? "Certains articles du panier sont invalides."
+        : "Ajoutez des articles avant de commander.";
+      message.className = "checkout-error";
+    }
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      message.textContent =
+        "Le paiement n'est pas encore connecté. " +
+        "Aucune commande n'a été enregistrée.";
+    });
+  </script>
+</body>
+</html>
