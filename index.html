@@ -73,6 +73,9 @@ const products=[
 ];
 const slides=['photo-1600210492486-724fe5c67fb0','photo-1616486338812-3dadae4b4ace','photo-1600607687920-4e2a09cf159d'];
 let slide=0,cart=[],favorites=[];
+ function saveStore() {
+  localStorage.setItem('corviane_panier', JSON.stringify(cart));
+}
 const money=n=>n.toLocaleString('fr-BE',{style:'currency',currency:'EUR'});
 function drawSlide(){
  const hero=document.querySelector('.hero');
