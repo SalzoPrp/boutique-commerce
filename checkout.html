@@ -258,7 +258,7 @@
       panier.forEach(produit => {
         const nom = String(produit.nom || "Article");
         const prix = Number(produit.prix);
-        const quantite = Number(produit.quantite);
+        const quantite = Number(produit.qty);
 
         if (
           !Number.isFinite(prix) || prix < 0 ||
