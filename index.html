@@ -111,5 +111,11 @@ function openCart(){$('drawer').classList.add('show');$('backdrop').classList.ad
 function addCart(id){const entry=cart.find(x=>x.id===id);if(entry)entry.qty++;else cart.push({id,qty:1});renderCart();saveStore();openCart()}
 function changeQty(id,delta){const entry=cart.find(x=>x.id===id);if(!entry)return;entry.qty+=delta;cart=cart.filter(x=>x.qty>0);renderCart();saveStore()}
 function renderCart(){const box=$('cartItems');box.replaceChildren();let total=0,count=0;cart.forEach(entry=>{const p=products.find(x=>x.id===entry.id);if(!p)return;total+=p.price*entry.qty;count+=entry.qty;const row=document.createElement('div');row.className='cart-row';const info=document.createElement('div');const title=document.createElement('strong');title.textContent=p.name;const subtotal=document.createElement('p');subtotal.textContent=`${entry.qty} × ${money(p.price)}`;info.append(title,subtotal);const controls=document.createElement('div');const minus=document.createElement('button');minus.textContent='−';minus.onclick=()=>changeQty(entry.id,-1);const plus=document.createElement('button');plus.textContent='+';plus.onclick=()=>changeQty(entry.id,1);controls.append(minus,plus);row.append(info,controls);box.append(row)});if(!cart.length){const p=document.createElement('p');p.className='empty';p.textContent='Votre panier est vide.';box.append(p)}$('cartCount').textContent=count;$('cartTotal').textContent=money(total)}
-$('checkout').onclick=()=>alert('Paiement désactivé : cette boutique est encore une démonstration.');drawSlide();renderProducts();renderCart();
+$('checkout').onclick=()=>{
+  if(cart.length===0){
+    alert('Votre panier est vide.');
+    return;
+  }
+  window.location.href='checkout.html';
+}; drawSlide();renderProducts();renderCart();
 </script></body></html>
