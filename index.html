@@ -73,6 +73,17 @@ const products=[
 ];
 const slides=['photo-1600210492486-724fe5c67fb0','photo-1616486338812-3dadae4b4ace','photo-1600607687920-4e2a09cf159d'];
 let slide=0,cart=[],favorites=[];
+try {
+  const ancienPanier = JSON.parse(localStorage.getItem('corviane_panier') || '[]');
+  if (Array.isArray(ancienPanier)) {
+    cart = ancienPanier
+      .filter(p => p && Number.isInteger(p.id) && Number.isInteger(p.qty) && p.qty > 0 && p.qty <= 99 && products.some(a => a.id === p.id))
+      .map(p => ({id:p.id,qty:p.qty}));
+  }
+} catch (e) {
+  cart = [];
+}
+saveStore();
  function saveStore() {
   localStorage.setItem('corviane_panier', JSON.stringify(cart));
 }
