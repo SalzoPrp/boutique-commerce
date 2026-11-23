@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CORVIANE — Contrôle technique local (lecture seule)</title>
+<style>body{font:16px system-ui,Arial,sans-serif;max-width:780px;margin:30px auto;padding:16px;color:#192331}main{border:1px solid #ddd;border-radius:12px;padding:22px}li{margin:12px 0}code{background:#eee;padding:2px 5px}button{padding:10px 16px}small{color:#555}</style></head>
+<body><main><h1>CORVIANE — Contrôle technique</h1><p>Diagnostic local en lecture seule : aucun paiement, aucune commande, aucune modification des données.</p>
+<button id="run">Vérifier ce navigateur</button><ul id="results" aria-live="polite"></ul><small>Ouvrir cette page depuis le même domaine que la boutique pour lire le même panier. Ne saisissez aucune clé ni mot de passe.</small></main>
+<script>
+'use strict';
+const output=document.getElementById('results');
+function result(label,detail){const li=document.createElement('li');const b=document.createElement('strong');b.textContent=label;li.append(b,document.createTextNode(' — '+detail));output.append(li)}
+function readArray(key){try{const raw=localStorage.getItem(key);if(raw===null)return {value:[],missing:true};const value=JSON.parse(raw);return Array.isArray(value)?{value,missing:false}:{error:'format non conforme'};}catch{return {error:'stockage indisponible ou JSON invalide'}}}
+function run(){output.replaceChildren();
+result('Origine',location.origin);
+const cart=readArray('corviane_panier'),catalog=readArray('corviane_catalogue');
+if(cart.error){result('Panier',cart.error);return}
+result('Panier',cart.missing?'Aucun panier enregistré':cart.value.length+' ligne(s)');
+if(catalog.error)result('Catalogue',catalog.error);
+else result('Catalogue',catalog.missing?'Aucun catalogue enregistré':catalog.value.length+' produit(s)');
+let invalid=0,numeric=0,uuid=0;
+for(const item of cart.value){if(!item||!Number.isSafeInteger(item.qty)||item.qty<1||item.qty>99)invalid++;if(item&&Number.isSafeInteger(item.id))numeric++;if(item&&typeof item.product_id==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.product_id))uuid++}
+result('Quantités',invalid?'⚠ '+invalid+' ligne(s) avec quantité invalide':'OK pour les lignes examinées');
+result('Identifiants produits',numeric+' ID numériques / '+uuid+' UUID Supabase');
+if(numeric)result('Compatibilité commande V3','⚠ Le panier du site utilise des ID numériques ; Supabase V3 attend des UUID. Une correspondance catalogue validée est nécessaire avant les vraies commandes.');
+result('Sécurité','Ce diagnostic ne transmet aucune donnée au serveur et ne change rien au panier.');
+}
+document.getElementById('run').addEventListener('click',run);run();
+</script></body></html>
