@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CORVIANE — Audit panier et catalogue</title>
+<style>body{font:16px/1.55 system-ui,Arial;background:#f7f7f7;color:#222;max-width:850px;margin:35px auto;padding:0 18px}main{background:white;padding:26px;border:1px solid #ddd;border-radius:12px}h1{font-size:24px}button{background:#222;color:white;padding:12px 18px;border:0;border-radius:6px;cursor:pointer}table{width:100%;border-collapse:collapse;margin:16px 0}td,th{padding:10px 6px;border-bottom:1px solid #ddd;text-align:left}small{color:#555}.warn{color:#9a5300}.ok{color:#12632b}code{word-break:break-all} .stat{font-weight:bold}</style></head><body><main>
+<h1>CORVIANE — Audit du catalogue et du panier</h1>
+<p>Contrôle en lecture seule. Aucun envoi de données, aucune commande, aucun paiement et aucune modification du panier.</p>
+<button id="go">Vérifier ce navigateur</button><div id="report" aria-live="polite"></div>
+<p><small>La page lit uniquement les clés locales <code>corviane_panier</code> et <code>corviane_catalogue</code>. Elle ne vérifie pas le stock serveur et ne synchronise pas Supabase.</small></p>
+</main><script>
+"use strict";
+const out=document.getElementById("report");
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function load(key){try{const raw=localStorage.getItem(key);if(raw===null)return {ok:true,value:[],absent:true};const value=JSON.parse(raw);return Array.isArray(value)?{ok:true,value,absent:false}:{ok:false,value:[],error:"Le contenu n'est pas une liste"};}catch(e){return {ok:false,value:[],error:"Lecture impossible ou JSON invalide"};}}
+const euro=n=>new Intl.NumberFormat("fr-BE",{style:"currency",currency:"EUR"}).format(n);
+document.getElementById("go").addEventListener("click",()=>{
+const c=load("corviane_catalogue"),p=load("corviane_panier");
+if(!c.ok||!p.ok){out.innerHTML='<p class="warn">Erreur de lecture : '+esc(c.error||p.error)+'</p>';return;}
+const catalogue=c.value,panier=p.value;
+let units=0,amount=0,errors=[],rows=[];
+const seen=new Set();
+for(let i=0;i<panier.length;i++){
+ const line=panier[i],id=line?.id,qty=line?.qty;
+ const product=catalogue.find(x=>x&&x.id===id);
+ if(!Number.isSafeInteger(id)||!Number.isSafeInteger(qty)||qty<1||qty>99||!product||!Number.isFinite(Number(product.price))||Number(product.price)<0||seen.has(id)){
+   errors.push("Ligne "+(i+1)+" : données invalides, doublon ou produit introuvable");continue;
+ }
+ seen.add(id);units+=qty;amount+=Number(product.price)*qty;
+ rows.push('<tr><td>'+esc(product.name||"Produit")+'</td><td>'+qty+'</td><td>'+euro(Number(product.price)*qty)+'</td><td>'+esc(id)+'</td></tr>');
+}
+let catalogRows=catalogue.map(x=>'<tr><td>'+esc(x?.name||"—")+'</td><td>'+esc(x?.id??"—")+'</td><td>'+ (Number.isFinite(Number(x?.price))?euro(Number(x.price)):"Prix invalide")+'</td></tr>').join("");
+out.innerHTML='<h2>Résultat</h2><p class="stat">Produits du catalogue local : '+catalogue.length+'</p>'+
+'<p class="stat">Lignes de panier : '+panier.length+'</p><p class="stat">Articles (unités) valides : '+units+'</p>'+
+'<p class="stat">Total indicatif des lignes valides : '+euro(amount)+'</p>'+
+(c.absent?'<p class="warn">Catalogue local absent : ouvrez la boutique dans ce navigateur.</p>':'')+
+(p.absent?'<p>Panier local absent ou vide.</p>':'')+
+(errors.length?'<p class="warn">'+errors.map(esc).join(' ; ')+'</p>':'<p class="ok">Aucune anomalie détectée dans les lignes examinées.</p>')+
+'<h3>Panier</h3><table><tr><th>Produit</th><th>Quantité</th><th>Total</th><th>ID local</th></tr>'+rows.join('')+'</table>'+
+'<h3>Catalogue local</h3><table><tr><th>Produit</th><th>ID local</th><th>Prix local</th></tr>'+catalogRows+'</table>'+
+'<p class="warn">Compatibilité Supabase V3 : les ID locaux numériques ne sont pas des UUID. Une correspondance serveur vérifiée est nécessaire avant la création de commandes réelles.</p>';
+});
+</script></body></html>
