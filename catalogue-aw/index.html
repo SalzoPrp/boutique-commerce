@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catalogue AW Dropship | CORVIANE</title>
+<link rel="stylesheet" href="catalogue.css">
+<header><strong>CORVIANE</strong><label><span data-t="language">Langue</span>
+<select id="language"><option value="fr">Français</option><option value="nl">Nederlands</option><option value="en">English</option></select></label></header>
+<main>
+<h1 data-t="title">Catalogue AW Dropship</h1>
+<p data-t="offer">Livraison standard AW offerte en Belgique dès 99 € TVAC.</p>
+<section class="filters">
+<label><span data-t="search">Rechercher</span><input id="search" type="search"></label>
+<label><span data-t="category">Catégorie</span><select id="category"></select></label>
+</section>
+<p id="status" role="status"></p>
+<div id="products"></div>
+<button id="next" type="button" hidden data-t="more">Afficher plus</button>
+<section id="basket"><h2 data-t="basket">Panier AW de test</h2><ul id="items"></ul><p id="total" aria-live="polite"></p></section>
+</main>
+<script type="module" src="catalogue.mjs"></script>
+</html>
