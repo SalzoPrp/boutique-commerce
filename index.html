@@ -33,6 +33,11 @@ html,body{max-width:100%;overflow-x:hidden}
 @media(max-width:390px){.actions button{min-width:40px;font-size:9px}.logo{width:100px;flex-basis:100px}}
 .hero .arrow{display:grid;place-items:center;padding:0;line-height:1}
 .hero .arrow svg{display:block;width:55%;height:55%;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:720px){
+  .nav:has(.nav-item.open){flex-wrap:wrap;overflow:visible}
+  .nav-item:not(.open) .dropdown{display:none}
+  .nav-item.open .dropdown{position:static;min-width:0}
+}
 </style><style id="coreva-carousel-fix">
 .hero-alternate{position:absolute;inset:0;background-position:center;background-size:cover;display:flex;align-items:center;color:#fff}
 .alternate-content{padding:16px 10%;max-width:650px}
@@ -70,11 +75,11 @@ const catalogueUrl = 'catalogue-aw/boutique.html';
 const basketKey = 'corviane_aw_test_basket';
 const favoritesKey = 'corviane_aw_favoris';
 const catalogueGroups = {
-  'Maison & Déco': ['Home & Garden','Candles & Holders','Incense and Burners','Fragrance'],
+  'Maison & Déco': ['Home & Garden','Candles & Holders'],
   'Jardin & Extérieur': ['Home & Garden'],
   'Mode & Accessoires': ['Clothing','Bags & Accessories','Jewellery'],
   'Beauté & Santé': ['Bath & Body','Aromatherapy'],
-  'Sport & Loisirs': ['Musical Instruments','Crystals & Esoterics']
+  'Sport & Loisirs': ['Musical Instruments']
 };
 const stockLimit = p => Math.min(99,p.stock);
 const decorations = () => decorationSkus.map(sku => productBySku.get(sku)).filter(Boolean);
@@ -139,16 +144,35 @@ function drawSlide(){
  $('heroShop').style.display=slide===0?'block':'none';
 }
 $('prevSlide').onclick=()=>{slide=(slide+slides.length-1)%slides.length;drawSlide()};$('nextSlide').onclick=()=>{slide=(slide+1)%slides.length;drawSlide()};$('heroShop').onclick=()=>{location.href=catalogueUrl;};
+const outdoorProduct = /wind[ -]?chime|bird (?:feeder|house)|garden (?:ornament|stake|light|lantern)|outdoor lantern|watering can/i;
+const subsection = {
+  'Mobilier': /\b(?:table|stool|chair|shelf|shelves|cabinet|bench)\b/i,
+  'Cuisine': /\b(?:cutlery|coaster|mug|cup|kitchen|teapot|serving tray)\b/i,
+  'Rangement': /\b(?:storage|organizer|organiser|basket|shelving)\b/i,
+  'Jardinage': /\b(?:watering can|garden stake|plant pot|planter)\b/i,
+  'Terrasse': /wind[ -]?chime|outdoor lantern|garden light/i,
+  'Femme': /\b(?:women|woman|ladies|female)\b/i,
+  'Homme': /\b(?:men|man|male)\b/i,
+  'Sacs': /\b(?:bags?|backpacks?|totes?|handbags?|pouches?)\b/i,
+  'Chaussures': /\b(?:shoes?|sandals?|slippers?|boots?)\b/i,
+  'Soins': /\b(?:body|skin|hand|foot|hair|face)\b/i
+};
 function filter(cat,sub){
   const groups=catalogueGroups[cat]||[];
-  const list=!sub ? products.filter(p=>groups.includes(p.category)) : products.filter(p=>
-    groups.includes(p.category) && normalizeSearch(p.name).includes(normalizeSearch(sub))
-  );
-  const selection=cat==='Maison & Déco'&&sub==='Décoration'
-    ? decorations()
-    : cat==='Beauté & Santé'&&sub==='Cosmétiques'
-      ? products.filter(p=>p.category==='Bath & Body')
-      : list;
+  let selection=products.filter(product=>groups.includes(product.category));
+  const rule=subsection[sub];
+  if(cat==='Maison & Déco'){
+    selection=selection.filter(product=>!outdoorProduct.test(product.name));
+    if(!sub||sub==='Décoration'){
+      const featured=decorations();
+      selection=sub?featured:[...featured,...selection.filter(product=>!decorationSkus.includes(product.sku))];
+    }
+  }
+  if(cat==='Jardin & Extérieur'&&sub!=='Jardinage') selection=selection.filter(product=>outdoorProduct.test(product.name));
+  if(rule) selection=selection.filter(product=>rule.test(product.name));
+  if(cat==='Beauté & Santé'&&sub==='Cosmétiques') selection=selection.filter(product=>product.category==='Bath & Body');
+  if(cat==='Beauté & Santé'&&sub==='Bien-être') selection=selection.filter(product=>product.category==='Aromatherapy');
+  if(cat==='Sport & Loisirs'&&(sub==='Fitness'||sub==='Sports')) selection=[];
   renderProducts(selection,sub||cat);
   document.querySelectorAll('.nav-item.open').forEach(x=>x.classList.remove('open'));
   $('productsSection').scrollIntoView({behavior:'smooth'});
