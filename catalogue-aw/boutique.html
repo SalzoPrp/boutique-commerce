@@ -199,9 +199,29 @@ function render() {
     (category !== 'Clothing' || !clothingGroup || clothingGroups[product.sku] === clothingGroup) &&
     `${product.name} ${product.sku}`.toLowerCase().includes(query));
   if (category === 'Fragrance') {
-    const rank = product => /\b(?:diffusers?|reeds?|sticks?|b[âa]tonnets?)\b/i.test(product.name) ? 0
-      : /\b(?:fragrance|essential) oils?\b/i.test(product.name) ? 2 : 1;
-    shown.sort((left, right) => rank(left) - rank(right));
+    const families = new Map();
+    const oils = [];
+    for (const product of shown) {
+      const diffuser = /\b(?:diffusers?|reeds?|sticks?|b[âa]tonnets?)\b/i.test(product.name);
+      if (!diffuser && /\b(?:fragrance|essential) oils?\b/i.test(product.name)) {
+        oils.push(product);
+        continue;
+      }
+      const range = product.sku.replace(/[-_]\d+[a-z]*$/i, '').toUpperCase();
+      const key = (diffuser ? 'diffuser:' : 'other:') + range;
+      if (!families.has(key)) families.set(key, { diffuser, products: [] });
+      families.get(key).products.push(product);
+    }
+    const ranges = [...families.values()].sort((left, right) =>
+      Number(right.diffuser) - Number(left.diffuser) || left.products.length - right.products.length
+    );
+    const ordered = [];
+    for (let variant = 0; ordered.length < shown.length - oils.length; variant++) {
+      for (const range of ranges) {
+        if (range.products[variant]) ordered.push(range.products[variant]);
+      }
+    }
+    shown.splice(0, shown.length, ...ordered, ...oils);
   }
   find('status').textContent = failed ? t('error') : `${shown.length} ${t('subtotal').toLowerCase()}`;
   find('next').hidden = shown.length <= limit;
