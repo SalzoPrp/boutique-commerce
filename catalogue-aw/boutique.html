@@ -191,11 +191,16 @@ function renderBasket() {
       ` · ${t('total')} ${euro(amount.total)}`;
 }
 
+const isSmallFragranceOil = product => product.category === 'Fragrance'
+  && /\b(?:5|10|15|20|25|30)\s*ml\b/i.test(product.name)
+  && /\b(?:fragrance|essential) oils?\b/i.test(product.name)
+  && !/\b(?:diffusers?|reeds?|sticks?|b[âa]tonnets?)\b/i.test(product.name);
+const displayCategory = product => isSmallFragranceOil(product) ? 'Aromatherapy' : product.category;
 function render() {
   const query = find('search').value.trim().toLowerCase();
   const category = find('category').value;
   const shown = products.filter(product =>
-    (!category || product.category === category) &&
+    (!category || displayCategory(product) === category) &&
     (category !== 'Clothing' || !clothingGroup || clothingGroups[product.sku] === clothingGroup) &&
     `${product.name} ${product.sku}`.toLowerCase().includes(query));
   if (category === 'Fragrance') {
@@ -227,7 +232,8 @@ function render() {
   find('next').hidden = shown.length <= limit;
   find('products').replaceChildren(...shown.slice(0, limit).map(product => {
     const card = node('article');
-     card.dataset.category = product.category;
+     const cardCategory = displayCategory(product);
+    card.dataset.category = cardCategory;
     if (product.photos.length) {
       const photo = node('img');
       photo.className = 'photo';
@@ -269,7 +275,7 @@ function render() {
     };
     const content = node('div');
     content.className = 'card-text';
-    const caption = node('p', (lang() === 'fr' ? featuredLabels.get(product.category) : undefined) ?? categoryNames[product.category]?.[['fr','nl'].indexOf(lang())] ?? product.category);
+    const caption = node('p', (lang() === 'fr' ? featuredLabels.get(cardCategory) : undefined) ?? categoryNames[cardCategory]?.[['fr','nl'].indexOf(lang())] ?? cardCategory);
     caption.className = 'category';
     const name = node('h2', product.name);
     name.lang = 'en';
