@@ -38,6 +38,8 @@ html,body{max-width:100%;overflow-x:hidden}
   .nav-item:not(.open) .dropdown{display:none}
   .nav-item.open .dropdown{position:static;min-width:0}
 }
+.nav-item>.category-name{padding-inline-end:4px}
+.nav-item>.category-toggle{padding-inline-start:4px}
 </style><style id="coreva-carousel-fix">
 .hero-alternate{position:absolute;inset:0;background-position:center;background-size:cover;display:flex;align-items:center;color:#fff}
 .alternate-content{padding:16px 10%;max-width:650px}
@@ -157,6 +159,13 @@ const subsection = {
   'Chaussures': /\b(?:shoes?|sandals?|slippers?|boots?)\b/i,
   'Soins': /\b(?:body|skin|hand|foot|hair|face)\b/i
 };
+function closeCategoryMenus(){
+  document.querySelectorAll('.nav-item.open').forEach(item=>{
+    item.classList.remove('open');
+    item.querySelector('.category-toggle').setAttribute('aria-expanded','false');
+  });
+}
+let pendingCategory;
 function filter(cat,sub){
   if(cat==='Mode & Accessoires'&&sub==='Sacs'){
     location.href='catalogue-aw/boutique.html?categorie=Bags%20%26%20Accessories';
@@ -177,11 +186,59 @@ function filter(cat,sub){
   if(cat==='Beauté & Santé'&&sub==='Cosmétiques') selection=selection.filter(product=>product.category==='Bath & Body');
   if(cat==='Beauté & Santé'&&sub==='Bien-être') selection=selection.filter(product=>product.category==='Aromatherapy');
   if(cat==='Sport & Loisirs'&&(sub==='Fitness'||sub==='Sports')) selection=[];
+  pendingCategory=products.length?undefined:[cat,sub];
   renderProducts(selection,sub||cat);
-  document.querySelectorAll('.nav-item.open').forEach(x=>x.classList.remove('open'));
+  closeCategoryMenus();
   $('productsSection').scrollIntoView({behavior:'smooth'});
 }
-categories.forEach(c=>{const item=document.createElement('div');item.className='nav-item';const trigger=document.createElement('button');trigger.textContent=c.name+' ▾';trigger.onclick=()=>{document.querySelectorAll('.nav-item').forEach(x=>{if(x!==item)x.classList.remove('open')});item.classList.toggle('open')};const menu=document.createElement('div');menu.className='dropdown';const all=document.createElement('button');all.textContent='Tout voir';all.onclick=()=>filter(c.name);menu.append(all);c.sub.forEach(s=>{const b=document.createElement('button');b.textContent=s;b.onclick=()=>filter(c.name,s);menu.append(b)});item.append(trigger,menu);$('nav').append(item);const tile=document.createElement('button');tile.className='category';const picture=document.createElement('img');picture.src=categoryImages[categories.indexOf(c)];picture.alt=c.name;picture.loading='lazy';const caption=document.createElement('span');caption.textContent=c.name;tile.setAttribute('aria-label',c.name);tile.append(picture,caption);tile.onclick=()=>filter(c.name);$('categoryGrid').append(tile)});
+categories.forEach((category,index)=>{
+  const item=document.createElement('div');
+  item.className='nav-item';
+  const label=document.createElement('button');
+  label.type='button';
+  label.className='category-name';
+  label.textContent=category.name;
+  label.onclick=()=>filter(category.name);
+  const toggle=document.createElement('button');
+  toggle.type='button';
+  toggle.className='category-toggle';
+  toggle.textContent='▾';
+  toggle.setAttribute('aria-label','Sous-rubriques de '+category.name);
+  toggle.setAttribute('aria-expanded','false');
+  const menu=document.createElement('div');
+  menu.className='dropdown';
+  menu.id='home-subcategories-'+index;
+  toggle.setAttribute('aria-controls',menu.id);
+  toggle.onclick=()=>{
+    const opening=!item.classList.contains('open');
+    closeCategoryMenus();
+    if(opening){
+      item.classList.add('open');
+      toggle.setAttribute('aria-expanded','true');
+    }
+  };
+  category.sub.forEach(sub=>{
+    const button=document.createElement('button');
+    button.type='button';
+    button.textContent=sub;
+    button.onclick=()=>filter(category.name,sub);
+    menu.append(button);
+  });
+  item.append(label,toggle,menu);
+  $('nav').append(item);
+  const tile=document.createElement('button');
+  tile.className='category';
+  const picture=document.createElement('img');
+  picture.src=categoryImages[index];
+  picture.alt=category.name;
+  picture.loading='lazy';
+  const caption=document.createElement('span');
+  caption.textContent=category.name;
+  tile.setAttribute('aria-label',category.name);
+  tile.append(picture,caption);
+  tile.onclick=()=>filter(category.name);
+  $('categoryGrid').append(tile);
+});
 function renderProducts(list=decorations(),title='Maison & Déco'){$('productsTitle').textContent=title;const grid=$('productGrid');grid.replaceChildren();if(!list.length){const p=document.createElement('p');p.textContent='Aucun article trouvé.';grid.append(p);return}list.slice(0,24).forEach(p=>{const card=document.createElement('article');card.className='product';const picture=document.createElement('img');if(p.photos[0])picture.src=p.photos[0];else picture.hidden=true;picture.alt=p.name;picture.loading='lazy';let photoIndex=0;picture.onerror=()=>{photoIndex++;if(p.photos[photoIndex])picture.src=p.photos[photoIndex];else picture.remove()};const body=document.createElement('div');body.className='product-body';const name=document.createElement('h3');name.textContent=p.name;const price=document.createElement('p');price.className='price';price.textContent=money(p.price)+' TVAC';const buttons=document.createElement('div');buttons.className='product-actions';const add=document.createElement('button');add.className='gold';add.textContent='Ajouter au panier';add.onclick=()=>addCart(p.id);const fav=document.createElement('button');fav.className='heart';fav.textContent=favorites.includes(p.id)?'♥':'♡';fav.setAttribute('aria-label','Ajouter ou retirer des favoris');fav.onclick=()=>{favorites=favorites.includes(p.id)?favorites.filter(x=>x!==p.id):[...favorites,p.id];saveStore();renderProducts(list,title)};buttons.append(add,fav);body.append(name,price,buttons);card.append(picture,body);grid.append(card)})}
 // Recherche : résultats en direct, sans distinction des accents ou majuscules.
 const searchForm=$('searchForm'),searchInput=$('searchInput');
@@ -233,7 +290,8 @@ async function loadProducts(){
       productBySku.set(item.id,item);
     }
     restoreStore();
-    searchProducts();
+    if(pendingCategory) filter(...pendingCategory);
+    else searchProducts();
     renderCart();
   } catch {
     $('productGrid').textContent='Les articles sont momentanément indisponibles.';
