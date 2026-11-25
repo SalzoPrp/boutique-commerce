@@ -54,7 +54,26 @@ details img{width:100%;object-fit:contain;aspect-ratio:1}
  .catalogue-nav details[open]{flex:0 0 100%;min-width:0}
  .catalogue-nav .category-panel{position:static;min-width:0}
 }
-.home-link{display:inline-block;margin-bottom:.8rem;color:#f4c466;font-weight:700;text-decoration:underline;text-underline-offset:.2em}\n</style>
+.home-link{display:inline-block;margin-bottom:.8rem;color:#f4c466;font-weight:700;text-decoration:underline;text-underline-offset:.2em}\n
+#checkout-link:not([hidden]), #shop-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: .65rem 1rem;
+  border: 1px solid #090909;
+  border-radius: .45rem;
+  background: #090909;
+  color: #f4c466;
+  font-weight: 700;
+  text-decoration: none;
+}
+#checkout-link:hover, #shop-link:hover { background: #232323; }
+#checkout-link:focus-visible, #shop-link:focus-visible {
+  outline: 2px solid #a66c00;
+  outline-offset: 3px;
+}
+</style>
 </head>
 <body>
 <header><a class="home-link" id="home-link" href="/">← Accueil</a><div class="brand">CORVIANE</div></header>
