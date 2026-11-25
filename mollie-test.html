@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Test Bancontact | CORVIANE</title>
+<title>Test Mollie | CORVIANE</title>
 <style>
 body{max-width:40rem;margin:3rem auto;padding:0 1rem;font:1rem/1.6 system-ui;color:#202020}
 button{font:inherit;font-weight:700;border:0;padding:.65rem 1rem;border-radius:.5rem;background:#111;color:#f4c466;cursor:pointer}
@@ -12,15 +12,30 @@ button:disabled{opacity:.55;cursor:default}
 </head>
 <body>
 <main>
-<h1>Test Bancontact CORVIANE</h1>
-<p>Simule un paiement avec le panier du catalogue et la livraison en Belgique. Aucun débit réel ni commande enregistrée.</p>
+<h1>Test Mollie CORVIANE</h1>
+<p>Calcule la livraison AW et simule le paiement du panier. Aucun débit réel.</p>
 <p><a href="/catalogue-aw/boutique.html">Ouvrir le catalogue de test</a></p>
-<button id="start" type="button">Tester le paiement Bancontact</button>
+<label for="country">Pays de livraison</label>
+<select id="country">
+<option value="BE">Belgique</option>
+<option value="FR">France</option>
+<option value="DE">Allemagne</option>
+<option value="LU">Luxembourg</option>
+<option value="NL">Pays-Bas</option>
+</select>
+<button id="start" type="button">Calculer le total</button>
+<p id="quote" aria-live="polite"></p>
+<button id="pay" type="button" hidden>Tester le paiement</button>
 <button id="refresh" type="button" hidden>Vérifier le statut</button>
 <p id="status" role="status"></p>
 </main>
 <script type="module">
 const start = document.querySelector('#start');
+const country = document.querySelector('#country');
+const quoteText = document.querySelector('#quote');
+const pay = document.querySelector('#pay');
+const euros = new Intl.NumberFormat('fr-BE', { style: 'currency', currency: 'EUR' });
+const money = cents => euros.format(cents / 100);
 const refresh = document.querySelector('#refresh');
 const status = document.querySelector('#status');
 const pendingKey = 'corviane_mollie_test_payment';
@@ -32,33 +47,68 @@ async function request(options, query = '') {
   return data;
 }
 
-let attempt;
-let previousBasket;
+let draft;
+function clearQuote() {
+  draft = undefined;
+  quoteText.textContent = '';
+  pay.hidden = true;
+}
+country.onchange = clearQuote;
+
+function submit(payload) {
+  return request({
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+}
+
 start.onclick = async () => {
+  clearQuote();
+  status.textContent = '';
   start.disabled = true;
+  country.disabled = true;
   try {
-    const raw = localStorage.getItem('corviane_aw_test_basket') || '[]';
-    const basket = JSON.parse(raw);
+    const raw = localStorage.getItem('corviane_aw_test_basket');
+    const basket = JSON.parse(raw || '[]');
     if (!Array.isArray(basket) || !basket.length) {
-      status.textContent = 'Ajoute un article dans le catalogue de test, puis reviens sur cette page.';
-      return;
+      throw new Error('Ajoute un article dans le catalogue de test, puis reviens sur cette page.');
     }
-    if (raw !== previousBasket) {
-      attempt = crypto.randomUUID();
-      previousBasket = raw;
-    }
+    const payload = { basket, country: country.value };
+    const { quote } = await submit(payload);
+    draft = { raw, payload, expectedTotal: quote.total, attempt: crypto.randomUUID() };
+    const surcharge = quote.surcharge ? ' · Supplément AW ' + money(quote.surcharge) : '';
+    quoteText.textContent = quote.grams + ' g · Articles ' + money(quote.subtotal) +
+      ' · Livraison ' + money(quote.shipping) + surcharge + ' · Total ' + money(quote.total);
+    pay.hidden = false;
+  } catch (error) {
+    status.textContent = error.message;
+  } finally {
+    start.disabled = false;
+    country.disabled = false;
+  }
+};
+
+pay.onclick = async () => {
+  if (!draft || draft.raw !== localStorage.getItem('corviane_aw_test_basket')) {
+    clearQuote();
+    status.textContent = 'Le panier a changé. Recalcule le total.';
+    return;
+  }
+  pay.disabled = true;
+  start.disabled = true;
+  country.disabled = true;
+  try {
     status.textContent = 'Ouverture de Mollie en mode test…';
-    const result = await request({
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ basket, attempt })
-    });
+    const result = await submit({ ...draft.payload, attempt: draft.attempt, expectedTotal: draft.expectedTotal });
     sessionStorage.setItem(pendingKey, result.id);
     location.assign(result.checkout);
   } catch (error) {
     status.textContent = error.message;
   } finally {
+    pay.disabled = false;
     start.disabled = false;
+    country.disabled = false;
   }
 };
 
@@ -89,6 +139,8 @@ async function showStatus() {
 }
 if (new URLSearchParams(location.search).has('retour')) {
   start.hidden = true;
+  country.hidden = true;
+  document.querySelector('label[for="country"]').hidden = true;
   refresh.hidden = false;
   refresh.onclick = showStatus;
   showStatus();

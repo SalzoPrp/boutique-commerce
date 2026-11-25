@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { belgianQuote } from '../catalogue-aw/pricing.mjs';
+import { previewQuote } from '../catalogue-aw/mollie-test-shipping.mjs';
 
 const products = new Map(JSON.parse(
   readFileSync(new URL('../catalogue-aw/produits.json', import.meta.url), 'utf8')
@@ -42,9 +42,9 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Ouvre la page depuis son aperçu Vercel.' });
     }
 
-    const { basket, attempt } = req.body ?? {};
+    const { basket, attempt, country, expectedTotal } = req.body ?? {};
     if (!Array.isArray(basket) || basket.length < 1 || basket.length > 100 ||
-        typeof attempt !== 'string' || !/^[a-f0-9-]{36}$/i.test(attempt)) {
+        (expectedTotal !== undefined && (typeof attempt !== 'string' || !/^[a-f0-9-]{36}$/i.test(attempt)))) {
       return res.status(400).json({ error: 'Panier ou référence de test invalide.' });
     }
     const lines = [];
@@ -59,9 +59,14 @@ export default async function handler(req, res) {
       seen.add(sku);
       lines.push({ product, quantity });
     }
-    const quote = belgianQuote(lines);
-    if (quote.shipping === null || !Number.isSafeInteger(quote.total) || quote.total < 2) {
-      return res.status(400).json({ error: 'Total belge indisponible pour ce panier.' });
+    const quote = previewQuote(country, lines);
+    if (!quote || !Number.isSafeInteger(quote.total) || quote.total < 2) {
+      return res.status(400).json({ error: 'Livraison indisponible pour ce pays ou ce poids.' });
+    }
+
+    if (expectedTotal === undefined) return res.json({ quote });
+    if (expectedTotal !== quote.total) {
+      return res.status(409).json({ error: 'Le total a changé. Recalcule les frais avant de payer.' });
     }
 
     const response = await fetch(endpoint, {
@@ -73,8 +78,8 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         amount: { currency: 'EUR', value: (quote.total / 100).toFixed(2) },
-        description: 'CORVIANE — essai Bancontact',
-        method: 'bancontact',
+        description: 'CORVIANE — test ' + country,
+        restrictPaymentMethodsToCountry: country,
         redirectUrl: 'https://' + host + '/mollie-test.html?retour=1',
         metadata: { source: marker }
       }),
