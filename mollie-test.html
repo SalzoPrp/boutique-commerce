@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test Bancontact | CORVIANE</title>
+<style>
+body{max-width:40rem;margin:3rem auto;padding:0 1rem;font:1rem/1.6 system-ui;color:#202020}
+button{font:inherit;font-weight:700;border:0;padding:.65rem 1rem;border-radius:.5rem;background:#111;color:#f4c466;cursor:pointer}
+button:disabled{opacity:.55;cursor:default}
+</style>
+</head>
+<body>
+<main>
+<h1>Test Bancontact CORVIANE</h1>
+<p>Simule un paiement avec le panier du catalogue et la livraison en Belgique. Aucun débit réel ni commande enregistrée.</p>
+<p><a href="/catalogue-aw/boutique.html">Ouvrir le catalogue de test</a></p>
+<button id="start" type="button">Tester le paiement Bancontact</button>
+<button id="refresh" type="button" hidden>Vérifier le statut</button>
+<p id="status" role="status"></p>
+</main>
+<script type="module">
+const start = document.querySelector('#start');
+const refresh = document.querySelector('#refresh');
+const status = document.querySelector('#status');
+const pendingKey = 'corviane_mollie_test_payment';
+
+async function request(options, query = '') {
+  const response = await fetch('/api/mollie-test' + query, options);
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Connexion de test indisponible.');
+  return data;
+}
+
+let attempt;
+let previousBasket;
+start.onclick = async () => {
+  start.disabled = true;
+  try {
+    const raw = localStorage.getItem('corviane_aw_test_basket') || '[]';
+    const basket = JSON.parse(raw);
+    if (!Array.isArray(basket) || !basket.length) {
+      status.textContent = 'Ajoute un article dans le catalogue de test, puis reviens sur cette page.';
+      return;
+    }
+    if (raw !== previousBasket) {
+      attempt = crypto.randomUUID();
+      previousBasket = raw;
+    }
+    status.textContent = 'Ouverture de Mollie en mode test…';
+    const result = await request({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ basket, attempt })
+    });
+    sessionStorage.setItem(pendingKey, result.id);
+    location.assign(result.checkout);
+  } catch (error) {
+    status.textContent = error.message;
+  } finally {
+    start.disabled = false;
+  }
+};
+
+const messages = {
+  paid: 'Paiement de test confirmé.',
+  open: 'Paiement de test en attente.',
+  pending: 'Paiement de test en attente.',
+  authorized: 'Paiement de test autorisé. Confirmation en attente.',
+  failed: 'Le paiement de test a échoué.',
+  canceled: 'Le paiement de test a été annulé.',
+  expired: 'Le paiement de test a expiré.'
+};
+async function showStatus() {
+  refresh.disabled = true;
+  try {
+    const id = sessionStorage.getItem(pendingKey);
+    if (!id) {
+      status.textContent = 'Aucun paiement de test retrouvé dans cet onglet.';
+      return;
+    }
+    const result = await request(undefined, '?id=' + encodeURIComponent(id));
+    status.textContent = messages[result.status];
+  } catch (error) {
+    status.textContent = error.message;
+  } finally {
+    refresh.disabled = false;
+  }
+}
+if (new URLSearchParams(location.search).has('retour')) {
+  start.hidden = true;
+  refresh.hidden = false;
+  refresh.onclick = showStatus;
+  showStatus();
+}
+</script>
+</body>
+</html>
