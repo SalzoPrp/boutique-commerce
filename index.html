@@ -64,7 +64,7 @@ const categories=[
 {name:'Maison & Déco',photo:'photo-1600210492486-724fe5c67fb0',sub:['Décoration','Mobilier','Cuisine','Rangement']},
 {name:'Jardin & Extérieur',photo:'photo-1416879595882-3373a0480b5b',sub:['Jardinage','Terrasse','Extérieur']},
 {name:'Électronique',photo:'photo-1498049794561-7780e7231661',sub:['Audio','Téléphones','Ordinateurs','Accessoires']},
-{name:'Mode & Accessoires',photo:'photo-1483985988355-763728e1935b',sub:['Femme','Homme','Sacs','Chaussures']},
+{name:'Mode & Accessoires',photo:'photo-1483985988355-763728e1935b',sub:['Femme','Homme','Sacs','Chaussures','Bijoux']},
 {name:'Beauté & Santé',photo:'photo-1596462502278-27bfdc403348',sub:['Cosmétiques','Soins','Bien-être']},
 {name:'Sport & Loisirs',photo:'photo-1517836357463-d25dfeac3438',sub:['Fitness','Sports','Loisirs','Instruments de musique']},
 {name:'Auto & Moto',photo:'photo-1492144534655-ae79c964c9d7',sub:['Accessoires auto','Entretien','Moto']}
@@ -187,6 +187,12 @@ function filter(cat,sub){
   }
   if(cat==='Jardin & Extérieur'&&sub!=='Jardinage') selection=selection.filter(product=>outdoorProduct.test(product.name));
   if(rule) selection=selection.filter(product=>rule.test(product.name));
+  if(cat==='Mode & Accessoires'&&sub==='Chaussures'){
+    selection=selection.filter(product=>product.category!=='Jewellery'&&!/\b(?:bracelets?|anklets?|bangles?)\b/i.test(product.name));
+  }
+  if(cat==='Mode & Accessoires'&&sub==='Bijoux'){
+    selection=selection.filter(product=>product.category==='Jewellery'||/\b(?:bracelets?|anklets?|bangles?)\b/i.test(product.name));
+  }
   if(cat==='Beauté & Santé'&&sub==='Cosmétiques') selection=selection.filter(product=>product.category==='Bath & Body');
   if(cat==='Beauté & Santé'&&sub==='Bien-être') selection=selection.filter(product=>product.category==='Aromatherapy');
   if(cat==='Sport & Loisirs'&&(sub==='Fitness'||sub==='Sports')) selection=[];
