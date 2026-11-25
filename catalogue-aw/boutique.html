@@ -294,6 +294,26 @@ const categoryButtons = document.querySelectorAll('[data-filter]');
 const featuredLabels = new Map(Array.from(categoryButtons, button => [button.dataset.filter, button.textContent]));
 const clothingButtons = document.querySelectorAll('[data-group]');
 const clothingMenu = find('clothing-menu');
+function readCategoryLink() {
+  const params = new URL(location.href).searchParams;
+  const category = params.get('categorie') || '';
+  const options = [...find('category').options];
+  find('category').value = options.some(option => option.value === category) ? category : '';
+  const group = params.get('sous-categorie') || '';
+  clothingGroup = category === 'Clothing' &&
+    [...clothingButtons].some(button => button.dataset.group === group) ? group : '';
+}
+
+function saveCategoryLink() {
+  const url = new URL(location.href);
+  const category = find('category').value;
+  if (category) url.searchParams.set('categorie', category);
+  else url.searchParams.delete('categorie');
+  if (category === 'Clothing' && clothingGroup) url.searchParams.set('sous-categorie', clothingGroup);
+  else url.searchParams.delete('sous-categorie');
+  if (url.href !== location.href) history.pushState(null, '', url);
+}
+
 function syncFilters() {
   const clothingSelected = find('category').value === 'Clothing';
   find('clothing-toggle').dataset.active = String(clothingSelected);
@@ -307,6 +327,8 @@ function syncFilters() {
 for (const button of categoryButtons) {
   button.onclick = () => {
     find('category').value = button.dataset.filter;
+    clothingGroup = '';
+    saveCategoryLink();
     clothingMenu.open = false;
     syncFilters();
     limit = pageSize;
@@ -317,6 +339,7 @@ for (const button of clothingButtons) {
   button.onclick = () => {
     find('category').value = 'Clothing';
     clothingGroup = button.dataset.group;
+    saveCategoryLink();
     clothingMenu.open = false;
     find('clothing-toggle').focus();
     limit = pageSize;
@@ -354,10 +377,17 @@ try {
   restoreBasket();
   const categories = [...new Set(products.map(product => product.category))].sort();
   categories.forEach(category => find('category').append(new Option(category, category)));
+  readCategoryLink();
 } catch {
   failed = true;
 }
 localize();
+window.addEventListener('popstate', () => {
+  readCategoryLink();
+  limit = pageSize;
+  syncFilters();
+  render();
+});
 window.addEventListener('pageshow', event => {
   if (event.persisted && !failed) {
     restoreBasket();
