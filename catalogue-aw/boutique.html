@@ -96,6 +96,7 @@ details img{width:100%;object-fit:contain;aspect-ratio:1}
 </section>
 <p><a id="shop-link" href="../index.html"></a></p>
 </main>
+<script defer src="/basket-notice.js"></script>
 <script type="module">
 import { belgianQuote } from "./pricing.mjs";
 
@@ -168,6 +169,15 @@ function node(tag, content) {
   return item;
 }
 
+function showBasketNotice(added) {
+  const labels = {
+    fr: ['Article retiré du panier', 'Article ajouté au panier'],
+    nl: ['Artikel verwijderd uit winkelmand', 'Artikel toegevoegd aan winkelmand'],
+    en: ['Item removed from basket', 'Item added to basket']
+  };
+  window.showCorvianeBasketNotice?.(labels[lang()][Number(added)]);
+}
+
 function renderBasket() {
   const lines = [...basket.values()];
   find('items').replaceChildren(...lines.map(({ product, quantity }) => {
@@ -176,7 +186,7 @@ function renderBasket() {
     remove.onclick = () => {
       if (quantity === 1) basket.delete(product.sku);
       else basket.get(product.sku).quantity--;
-      saveBasket();
+      if (saveBasket()) showBasketNotice(false);
       render();
     };
     line.append(remove);
@@ -270,7 +280,7 @@ function render() {
       if (current >= Math.min(product.stock, 99)) return;
       basket.set(product.sku, { product, quantity: current + 1 });
       add.disabled = current + 1 >= Math.min(product.stock, 99);
-      saveBasket();
+      if (saveBasket()) showBasketNotice(true);
       renderBasket();
     };
     const content = node('div');
