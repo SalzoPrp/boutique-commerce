@@ -51,10 +51,10 @@ details img{width:100%;object-fit:contain;aspect-ratio:1}
 .catalogue-nav .category-panel button{display:block;width:100%;text-align:start;color:var(--ink)}
 .catalogue-nav .category-panel button:hover,.catalogue-nav .category-panel button[aria-pressed="true"]{background:#fff2d7;color:var(--ink)}
 @media(max-width:40rem){.catalogue-nav details{position:static}.catalogue-nav{position:relative}.category-panel{inset-inline:0}}
-</style>
+.home-link{display:inline-block;margin-bottom:.8rem;color:#f4c466;font-weight:700;text-decoration:underline;text-underline-offset:.2em}\n</style>
 </head>
 <body>
-<header><div class="brand">CORVIANE</div></header>
+<header><a class="home-link" id="home-link" href="/">← Accueil</a><div class="brand">CORVIANE</div></header>
 <p class="offer" id="offer">Livraison offerte en Belgique dès <strong>99 € TVAC</strong></p>
 <main>
 <h1 data-t="title">Catalogue</h1>
@@ -258,6 +258,7 @@ function render() {
 
 function localize() {
   document.documentElement.lang = lang();
+  find('home-link').textContent = {fr:'← Accueil',nl:'← Startpagina',en:'← Home'}[lang()];
   find('checkout-link').textContent = {
     fr: 'Passer ma commande', nl: 'Naar afrekenen', en: 'Proceed to checkout'
   }[lang()];
