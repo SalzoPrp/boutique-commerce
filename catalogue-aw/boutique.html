@@ -50,7 +50,10 @@ details img{width:100%;object-fit:contain;aspect-ratio:1}
 .category-panel{position:absolute;z-index:2;inset-inline-end:0;min-width:min(17rem,calc(100vw - 3rem));background:white;box-shadow:0 4px 14px #0003}
 .catalogue-nav .category-panel button{display:block;width:100%;text-align:start;color:var(--ink)}
 .catalogue-nav .category-panel button:hover,.catalogue-nav .category-panel button[aria-pressed="true"]{background:#fff2d7;color:var(--ink)}
-@media(max-width:40rem){.catalogue-nav details{position:static}.catalogue-nav{position:relative}.category-panel{inset-inline:0}}
+@media(max-width:40rem){
+ .catalogue-nav details[open]{flex:0 0 100%;min-width:0}
+ .catalogue-nav .category-panel{position:static;min-width:0}
+}
 .home-link{display:inline-block;margin-bottom:.8rem;color:#f4c466;font-weight:700;text-decoration:underline;text-underline-offset:.2em}\n</style>
 </head>
 <body>
