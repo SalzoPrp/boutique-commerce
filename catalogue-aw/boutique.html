@@ -199,7 +199,7 @@ function render() {
     (category !== 'Clothing' || !clothingGroup || clothingGroups[product.sku] === clothingGroup) &&
     `${product.name} ${product.sku}`.toLowerCase().includes(query));
   if (category === 'Fragrance') {
-    const rank = product => /\breed diffuser\b/i.test(product.name) ? 0
+    const rank = product => /\b(?:diffusers?|reeds?|sticks?|b[âa]tonnets?)\b/i.test(product.name) ? 0
       : /\b(?:fragrance|essential) oils?\b/i.test(product.name) ? 2 : 1;
     shown.sort((left, right) => rank(left) - rank(right));
   }
