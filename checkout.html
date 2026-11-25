@@ -127,6 +127,7 @@ function loadArray(key){try{const x=JSON.parse(localStorage.getItem(key)||'[]');
 let panier=loadArray('corviane_panier'), catalogue=loadArray('corviane_catalogue');
 // Secours si le navigateur refuse localStorage : lecture du panier transmis par index.html.
 try { if(location.hash.startsWith('#panier=')){const x=JSON.parse(decodeURIComponent(location.hash.slice(8)));if(Array.isArray(x.panier)&&Array.isArray(x.catalogue)){panier=x.panier;catalogue=x.catalogue;}history.replaceState(null,'',location.pathname+location.search);} } catch(e) {}
+let awLines=[], awReady=true, awValid=true, awQuote, awTotal=null;
 const articles=$('checkoutArticles');
 let panierValide=panier.length>0&&catalogue.length>0;
 let montant=0;
@@ -144,23 +145,78 @@ if(!Number.isFinite(montant))panierValide=false;
 $('sousTotal').textContent=euros(Number.isFinite(montant)?montant:0);
 $('livraisonPrix').textContent='Non calculée';
 $('total').textContent=euros(Number.isFinite(montant)?montant:0);
+function refreshAwTotals(){
+ const subtotal=montant+awLines.reduce((sum,line)=>sum+line.product.cents*line.quantity/100,0);
+ $('sousTotal').textContent=euros(subtotal);
+ awTotal=null;
+ let shipping='Non calculée';
+ if(!awReady)shipping='Calcul en cours';
+ else if(!awValid)shipping='Catalogue indisponible ou articles à vérifier';
+ else if(awLines.length){
+   if($('pays').value!=='BE')shipping='Tarif à confirmer pour cette destination';
+   else {
+     const quote=awQuote(awLines);
+     if(quote.shipping===null)shipping='Port à vérifier';
+     else {
+       shipping=euros(quote.shipping/100)+(quote.surcharge?' + '+euros(quote.surcharge/100)+' de supplément':'');
+       if(panier.length)shipping+=' pour le catalogue. Port des autres articles à confirmer.';
+       else awTotal=subtotal+(quote.shipping+quote.surcharge)/100;
+     }
+   }
+ }
+ $('livraisonPrix').textContent=shipping;
+ $('total').textContent=awTotal!==null?euros(awTotal):awLines.length||!awReady||!awValid?'À confirmer':euros(montant);
+}
+async function loadAwBasket(){
+ const selection=loadArray('corviane_aw_test_basket');
+ if(!selection.length)return;
+ awReady=false;refreshAwTotals();updateButton();
+ try{
+   const response=await fetch('./catalogue-aw/produits.json');
+   if(!response.ok)throw Error();
+   const bySku=new Map((await response.json()).map(p=>[p.sku,p]));
+   ({belgianQuote:awQuote}=await import('./catalogue-aw/pricing.mjs'));
+   const seen=new Set();
+   for(const entry of selection){
+     const [sku,quantity]=Array.isArray(entry)?entry:[], product=bySku.get(sku);
+     if(seen.has(sku)||!product?.active||!Number.isSafeInteger(quantity)||quantity<1||quantity>Math.min(99,product.stock)){
+       awValid=false;continue;
+     }
+     seen.add(sku);awLines.push({product,quantity});
+   }
+   if(awLines.length&&!panier.length)articles.replaceChildren();
+   for(const {product,quantity} of awLines){
+     const row=document.createElement('div');row.className='checkout-summary-line';
+     const name=document.createElement('span');name.textContent=product.name+' × '+quantity;
+     const price=document.createElement('strong');price.textContent=euros(product.cents*quantity/100);
+     row.append(name,price);articles.append(row);
+   }
+ }catch{awValid=false;}
+ finally{
+   awReady=true;
+   if(!awValid)message.textContent='Vérifiez les articles du catalogue dans le panier.';
+   else if(awLines.length&&!panier.length)message.textContent='';
+   refreshAwTotals();updateButton();
+ }
+}
 function fieldsValid(){return [...form.querySelectorAll('input[required]:not([type=checkbox]),select[required]')].every(x=>x.checkValidity()&&String(x.value).trim()!=='');}
-function updateButton(){commander.disabled=!panierValide||!$('conditions').checked||!fieldsValid();}
+function updateButton(){commander.disabled=!awReady||!awValid||(panier.length>0&&!panierValide)||(!panierValide&&!awLines.length)||(awLines.length>0&&awTotal===null)||!$('conditions').checked||!fieldsValid();}
 if(!panierValide){message.textContent='Votre panier est vide ou incomplet. Retournez à la boutique pour sélectionner des articles.';message.className='checkout-error';}
 form.addEventListener('input',updateButton);
-form.addEventListener('change',updateButton);
+form.addEventListener('change',()=>{refreshAwTotals();updateButton();});
 form.addEventListener('submit',e=>{
  e.preventDefault();
- if(!panierValide||!form.reportValidity()||!$('conditions').checked)return;
+ if(commander.disabled||!form.reportValidity()||!$('conditions').checked)return;
  const client=[$('prenom').value.trim(),$('nom').value.trim()].join(' ');
  const recap=$('preview');
  recap.replaceChildren();
  const titre=document.createElement('strong');titre.textContent='Récapitulatif de préparation — aucune commande enregistrée';
- const texte=document.createElement('p');texte.textContent='Client : '+client+' | Pays : '+$('pays').selectedOptions[0].textContent+' | Articles : '+euros(montant)+'. Les frais de livraison et le total final seront confirmés lors de l’ouverture des commandes.';
+ const texte=document.createElement('p');texte.textContent='Client : '+client+' | Pays : '+$('pays').selectedOptions[0].textContent+' | Articles : '+(awTotal===null?euros(montant)+'. Livraison à confirmer.':euros(awTotal)+' livraison comprise.');
  const info=document.createElement('p');info.textContent='Aucun paiement n’a été effectué. Vos coordonnées ne sont pas transmises ni enregistrées par CORVIANE.';
  recap.append(titre,texte,info);recap.hidden=false;recap.scrollIntoView({behavior:'smooth',block:'nearest'});
 });
 updateButton();
+loadAwBasket();
 </script>
 </body>
 </html>
