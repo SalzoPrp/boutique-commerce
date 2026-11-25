@@ -158,6 +158,10 @@ const subsection = {
   'Soins': /\b(?:body|skin|hand|foot|hair|face)\b/i
 };
 function filter(cat,sub){
+  if(cat==='Mode & Accessoires'&&sub==='Sacs'){
+    location.href='catalogue-aw/boutique.html?categorie=Bags%20%26%20Accessories';
+    return;
+  }
   const groups=catalogueGroups[cat]||[];
   let selection=products.filter(product=>groups.includes(product.category));
   const rule=subsection[sub];
