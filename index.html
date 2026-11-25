@@ -166,6 +166,11 @@ function closeCategoryMenus(){
   });
 }
 let pendingCategory;
+const isSmallFragranceOil = product => product.category === 'Fragrance'
+  && /\b(?:5|10|15|20|25|30)\s*ml\b/i.test(product.name)
+  && /\b(?:fragrance|essential) oils?\b/i.test(product.name)
+  && !/\b(?:diffusers?|reeds?|sticks?|b[âa]tonnets?)\b/i.test(product.name);
+const isTeapot = product => /\b(?:tea[ -]?pots?|théières?)\b/i.test(product.name);
 function filter(cat,sub){
   if(cat==='Sport & Loisirs'&&sub==='Instruments de musique'){
     location.href='catalogue-aw/boutique.html?categorie=Musical%20Instruments';
@@ -194,7 +199,16 @@ function filter(cat,sub){
     selection=selection.filter(product=>product.category==='Jewellery'||/\b(?:bracelets?|anklets?|bangles?)\b/i.test(product.name));
   }
   if(cat==='Beauté & Santé'&&sub==='Cosmétiques') selection=selection.filter(product=>product.category==='Bath & Body');
-  if(cat==='Beauté & Santé'&&sub==='Bien-être') selection=selection.filter(product=>product.category==='Aromatherapy');
+  if(cat==='Maison & Déco'&&(!sub||sub==='Cuisine')){
+    const included=new Set(selection.map(product=>product.sku));
+    selection=[...selection,...products.filter(product=>isTeapot(product)&&!included.has(product.sku))];
+  }
+  if(cat==='Beauté & Santé'&&sub==='Bien-être'){
+    const teas=products.filter(product=>product.category==='Artisan Tea'&&!isTeapot(product));
+    const oils=products.filter(isSmallFragranceOil);
+    const aromatherapy=selection.filter(product=>product.category==='Aromatherapy'&&!isTeapot(product));
+    selection=[...oils.slice(0,8),...teas.slice(0,8),...aromatherapy,...oils.slice(8),...teas.slice(8)];
+  }
   if(cat==='Sport & Loisirs'&&(sub==='Fitness'||sub==='Sports')) selection=[];
   pendingCategory=products.length?undefined:[cat,sub];
   renderProducts(selection,sub||cat);
@@ -249,6 +263,14 @@ categories.forEach((category,index)=>{
   tile.onclick=()=>filter(category.name);
   $('categoryGrid').append(tile);
 });
+const fragranceItem=document.createElement('div');
+fragranceItem.className='nav-item';
+const fragranceLink=document.createElement('button');
+fragranceLink.type='button';
+fragranceLink.textContent='Parfums';
+fragranceLink.onclick=()=>{location.href='catalogue-aw/boutique.html?categorie=Fragrance';};
+fragranceItem.append(fragranceLink);
+$('nav').append(fragranceItem);
 function renderProducts(list=decorations(),title='Maison & Déco'){$('productsTitle').textContent=title;const grid=$('productGrid');grid.replaceChildren();if(!list.length){const p=document.createElement('p');p.textContent='Aucun article trouvé.';grid.append(p);return}list.slice(0,24).forEach(p=>{const card=document.createElement('article');card.className='product';const picture=document.createElement('img');if(p.photos[0])picture.src=p.photos[0];else picture.hidden=true;picture.alt=p.name;picture.loading='lazy';let photoIndex=0;picture.onerror=()=>{photoIndex++;if(p.photos[photoIndex])picture.src=p.photos[photoIndex];else picture.remove()};const body=document.createElement('div');body.className='product-body';const name=document.createElement('h3');name.textContent=p.name;const price=document.createElement('p');price.className='price';price.textContent=money(p.price)+' TVAC';const buttons=document.createElement('div');buttons.className='product-actions';const add=document.createElement('button');add.className='gold';add.textContent='Ajouter au panier';add.onclick=()=>addCart(p.id);const fav=document.createElement('button');fav.className='heart';fav.textContent=favorites.includes(p.id)?'♥':'♡';fav.setAttribute('aria-label','Ajouter ou retirer des favoris');fav.onclick=()=>{favorites=favorites.includes(p.id)?favorites.filter(x=>x!==p.id):[...favorites,p.id];saveStore();renderProducts(list,title)};buttons.append(add,fav);body.append(name,price,buttons);card.append(picture,body);grid.append(card)})}
 // Recherche : résultats en direct, sans distinction des accents ou majuscules.
 const searchForm=$('searchForm'),searchInput=$('searchInput');
