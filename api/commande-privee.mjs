@@ -1,3 +1,4 @@
+import { hasAvailableStock } from '../orders/production/aw-stock.mjs';
 import { paidConfirmation } from '../orders/production/confirmation.mjs';
 import { readFileSync } from 'node:fs';
 import { previewQuote } from '../catalogue-aw/mollie-test-shipping.mjs';
@@ -153,6 +154,15 @@ export default async function handler(req, res) {
     const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
     if (bypass) webhookUrl.searchParams.set('x-vercel-protection-bypass', bypass);
     const amount = { currency: 'EUR', value: (details.quote.total / 100).toFixed(2) };
+    if (!order.payment_id) {
+      try {
+        if (!await hasAvailableStock(details.articles, process.env.CORVIANE_AW_READ_TOKEN)) {
+          return res.status(409).json({ error: 'Un article n’est plus disponible dans la quantité demandée. Vérifiez votre panier.' });
+        }
+      } catch {
+        return res.status(503).json({ error: 'Le stock fournisseur ne peut pas être confirmé. Veuillez réessayer.' });
+      }
+    }
     const payment = order.payment_id
       ? await json(payments + '/' + order.payment_id, { headers: mollieHeaders })
       : await json(payments, {
