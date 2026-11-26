@@ -104,15 +104,19 @@ export default async function handler(req, res) {
           body: JSON.stringify({ payment_id: id, payment_status: payment.status }) });
         if (!rows.length) return res.status(409).end();
       }
-      const saved = payment.status === 'paid' ? await loadOrder(orderId) : null;
-      if (saved?.payment_status === 'paid' && saved.details.customer.email === 'contact@corviane.eu') {
-        const message = paidConfirmation(saved);
+      const outcome = { failed: 'refusé', canceled: 'annulé' }[payment.status];
+      const saved = payment.status === 'paid' || outcome ? await loadOrder(orderId) : null;
+      if (saved && saved.payment_status === payment.status && saved.details.customer.email === 'contact@corviane.eu') {
+        const message = outcome ? {
+          subject: 'Paiement ' + outcome + ' — CORVIANE',
+          text: 'Le paiement de votre commande a été ' + outcome + '. Aucun montant ne vous a été débité.\n\nRéférence : ' + saved.id
+        } : paidConfirmation(saved);
         const result = await json('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
             Authorization: 'Bearer ' + process.env.CORVIANE_RESEND_KEY,
             'Content-Type': 'application/json',
-            'Idempotency-Key': 'corviane-test-confirmation-' + saved.id
+            'Idempotency-Key': 'corviane-test-confirmation-' + saved.id + (outcome ? '-' + payment.status : '')
           },
           body: JSON.stringify({
             from: 'CORVIANE <commandes@corviane.eu>',
