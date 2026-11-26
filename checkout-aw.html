@@ -73,6 +73,26 @@ body{background:radial-gradient(ellipse at 85% 0%,#302416 0%,#111 48%,#080808 10
 .legal-body a{color:#f2b845;text-decoration:underline}
 .legal-body p,.legal-body li{overflow-wrap:anywhere}
 .legal-body .notice{background:#30281c;padding:12px;border-left:3px solid #f2b845}
+
+    :is(#pays, #livraison) option {
+      background:var(--corviane-ink); color:var(--corviane-gold);
+    }
+    @supports (appearance: base-select) {
+      :is(#pays, #livraison) { appearance:base-select; }
+      :is(#pays, #livraison)::picker(select) {
+        appearance:base-select;
+        background:var(--corviane-ink); color:var(--corviane-gold);
+        border:1px solid var(--corviane-gold); border-radius:8px;
+      }
+      :is(#pays, #livraison)::picker(select) {
+        position-area:block-end span-inline-end;
+        position-try-fallbacks:none;
+      }
+      :is(#pays, #livraison) option { padding:10px 14px; }
+      :is(#pays, #livraison) option:is(:hover, :focus, :checked) {
+        background:var(--corviane-gold); color:var(--corviane-ink);
+      }
+    }
 </style>
 </head>
 <body>
@@ -109,7 +129,7 @@ body{background:radial-gradient(ellipse at 85% 0%,#302416 0%,#111 48%,#080808 10
 <div class="checkout-summary-line"><span>Sous-total</span><strong id="sousTotal">0,00 €</strong></div>
 <div class="checkout-summary-line"><span>Livraison</span><strong id="livraisonPrix">À calculer</strong></div>
 <div class="checkout-summary-line checkout-total"><span>Sous-total des articles</span><span id="total">À confirmer</span></div>
-<p class="checkout-note">Montant indicatif, hors frais de livraison. Aucun paiement ou achat ne sera effectué.</p>
+<p class="checkout-note">Total indicatif, livraison comprise lorsqu’elle est calculée. Aucun paiement ou achat ne sera effectué.</p>
 </aside>
 </div>
 <a class="checkout-back" href="catalogue-aw/boutique.html">← Retour à la boutique</a>
@@ -151,10 +171,9 @@ function refreshAwTotals(){
  if(!awReady)shipping='Calcul en cours';
  else if(!awValid)shipping='Catalogue indisponible ou articles à vérifier';
  else if(awLines.length){
-   if($('pays').value!=='BE')shipping='Tarif à confirmer pour cette destination';
-   else {
-     const quote=awQuote(awLines);
-     if(quote.shipping===null)shipping='Port à vérifier';
+   {
+     const quote=awQuote($('pays').value,awLines);
+     if(!quote)shipping='Port à vérifier';
      else {
        shipping=euros(quote.shipping/100)+(quote.surcharge?' + '+euros(quote.surcharge/100)+' de supplément':'');
        if(panier.length)shipping+=' pour le catalogue. Port des autres articles à confirmer.';
@@ -173,7 +192,7 @@ async function loadAwBasket(){
    const response=await fetch('./catalogue-aw/produits.json');
    if(!response.ok)throw Error();
    const bySku=new Map((await response.json()).map(p=>[p.sku,p]));
-   ({belgianQuote:awQuote}=await import('./catalogue-aw/pricing.mjs'));
+   ({previewQuote:awQuote}=await import('./catalogue-aw/mollie-test-shipping.mjs'));
    const seen=new Set();
    for(const entry of selection){
      const [sku,quantity]=Array.isArray(entry)?entry:[], product=bySku.get(sku);
@@ -214,7 +233,7 @@ form.addEventListener('submit',e=>{
  recap.append(titre,texte,info);recap.hidden=false;recap.scrollIntoView({behavior:'smooth',block:'nearest'});
 });
 updateButton();
-loadAwBasket();
+const checkoutCatalogueReady = loadAwBasket();
 </script>
 </body>
 </html>
