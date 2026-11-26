@@ -112,7 +112,7 @@ export default async function handler(req, res) {
           headers: {
             Authorization: 'Bearer ' + process.env.CORVIANE_RESEND_KEY,
             'Content-Type': 'application/json',
-            'Idempotency-Key': 'corviane-mollie-resend-integrated-test-20261126'
+            'Idempotency-Key': 'corviane-test-confirmation-' + saved.id
           },
           body: JSON.stringify({
             from: 'CORVIANE <commandes@corviane.eu>',
