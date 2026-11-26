@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Mon panier et mes coordonnées | CORVIANE</title>
+<style>
+    :root { --corviane-gold:#f2b845; --corviane-ink:#111; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Arial,Helvetica,sans-serif; color:#202020; background:radial-gradient(ellipse at 80% 0%,#f7e9cc 0%,transparent 42%),#f7f5f0; }
+    .checkout-header { background:#080808; border-bottom:3px solid var(--corviane-gold); padding:22px 20px; text-align:center; }
+    .checkout-brand { color:var(--corviane-gold);font:clamp(28px,4vw,42px) Georgia,serif;letter-spacing:5px;text-decoration:none; }
+    .checkout-brand-sub { color:#ddd; font-size:11px; letter-spacing:2px; margin-top:6px; }
+    .checkout-page { max-width:1150px;margin:36px auto 65px;padding:0 20px; }
+    .checkout-page h1 { font:clamp(29px,4vw,40px) Georgia,serif; margin:0 0 9px; color:#151515; }
+    .checkout-intro { margin:0;color:#666;line-height:1.6; }
+    .checkout-layout { display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);gap:24px;margin-top:27px;align-items:start; }
+    .checkout-panel { padding:29px; border:1px solid #e7ddc8;border-top:4px solid var(--corviane-gold);border-radius:14px;background:#fff; color:#222;box-shadow:0 14px 35px #2b200b12; }
+    .checkout-panel h2 { font:24px Georgia,serif; margin:0 0 24px; }
+    .checkout-field { margin-bottom:17px; }
+    .checkout-field label { display:block;margin-bottom:8px;font-size:14px;font-weight:600; }
+    .checkout-field input:not([type="checkbox"]),.checkout-field select { width:100%;padding:13px 14px;border:1px solid #cfcac1;border-radius:8px;font:inherit;background:#fff;color:#222;transition:border-color .15s,box-shadow .15s; }
+    .checkout-field input:not([type="checkbox"]):focus,.checkout-field select:focus { outline:none;border-color:#c58d20;box-shadow:0 0 0 3px #f2b84540; }
+    .checkout-row { display:grid;grid-template-columns:1fr 1fr;gap:15px; }
+    .checkout-summary-line { display:flex;justify-content:space-between;gap:15px;padding:14px 0;border-bottom:1px solid #eee;line-height:1.4; }
+    .checkout-summary-line strong { text-align:right;white-space:nowrap; }
+    .checkout-total { font-size:20px;font-weight:bold;border-bottom:0; }
+    .checkout-total span:last-child { color:#9a680e; }
+    .checkout-consent { display:flex!important;align-items:flex-start;gap:11px;line-height:1.5;font-weight:500!important;cursor:pointer; }
+    .checkout-consent a { color:#986411;text-decoration:underline; }
+    .checkout-footer a { color:#f2b845; }
+    .checkout-consent input[type="checkbox"] { appearance:auto;width:18px;height:18px;flex:0 0 18px;margin:2px 0 0;accent-color:#bd821b;cursor:pointer; }
+    .checkout-button { width:100%;padding:16px;margin-top:9px;border:1px solid #bbb;border-radius:9px;background:#dedede;color:#777;font:inherit;font-weight:700;cursor:not-allowed;transition:background .2s,color .2s,box-shadow .2s,transform .2s; }
+    .checkout-button:disabled { opacity:1; }
+    .checkout-button:not(:disabled) { background:var(--corviane-gold);border-color:#dfa42c;color:#151515;cursor:pointer;box-shadow:0 5px 14px #c98d2040; }
+    .checkout-button:not(:disabled):hover { background:#ffd17a;transform:translateY(-1px); }
+    .checkout-button:focus-visible { outline:3px solid #ac760e;outline-offset:3px; }
+    .checkout-note { font-size:13px;line-height:1.6;margin-top:15px;color:#69645d; }
+    .checkout-error { color:#b00020;font-size:14px;line-height:1.5; }
+    .checkout-payment-info { padding:13px 15px;border-radius:9px;background:#fff7e8;border:1px solid #ead5a9;font-size:13px;line-height:1.6;margin:14px 0; }
+    .checkout-error { color:#a32020; }
+    .checkout-preview { margin-top:18px;padding:18px;border:1px solid #e0c27f;border-radius:10px;background:#fffbf0;line-height:1.7;white-space:pre-line; }
+    .checkout-back {display:inline-block;margin-top:18px;color:#866020;font-weight:bold;text-decoration:none;}
+    .checkout-footer { text-align:center;background:#080808;color:#bfbfbf;padding:20px;font-size:12px; }
+    @media(max-width:750px) { .checkout-layout{grid-template-columns:1fr}.checkout-row{grid-template-columns:1fr}.checkout-panel{padding:21px}.checkout-page{margin-top:25px} }
+  
+/* CORVIANE — restauration de la présentation noir et or */
+body{background:radial-gradient(ellipse at 85% 0%,#302416 0%,#111 48%,#080808 100%);color:#f3eee5}
+.checkout-page h1{color:#f2b845}
+.checkout-intro{color:#c8bda9}
+.checkout-panel{background:#1c1a17;color:#f6f0e5;border:1px solid #6d542b;border-top:4px solid #f2b845;box-shadow:0 15px 40px #0006}
+.checkout-panel h2{color:#f2b845}
+.checkout-field label{color:#eee5d5}
+.checkout-field input:not([type="checkbox"]),.checkout-field select{background:#282520;color:#fff;border-color:#796849}
+.checkout-field input:not([type="checkbox"])::placeholder{color:#b8ae9c}
+.checkout-summary-line{border-color:#514534}
+.checkout-total span:last-child{color:#f2b845}
+.checkout-note{color:#c8bda9}
+.checkout-payment-info{background:#2e271c;border-color:#846b3d;color:#f2e5cc}
+.checkout-preview{background:#29241b;border-color:#ae8b4b;color:#f3e8d4}
+.checkout-back{color:#f2b845}
+.checkout-consent a{color:#f2b845}
+.checkout-error{color:#ff9a9a}
+.checkout-button{background:#66615a;color:#e9e3d8;border-color:#827c72}
+.checkout-button:not(:disabled){background:#f2b845;color:#111}
+.legal-wrap{margin-top:35px}
+.legal-wrap h2{color:#f2b845;font:27px Georgia,serif}
+.legal-wrap details{margin:12px 0;border:1px solid #6d542b;border-radius:10px;background:#1c1a17;overflow:hidden}
+.legal-wrap summary{cursor:pointer;padding:18px 20px;font-weight:700;color:#f2b845}
+.legal-body{padding:0 22px 22px;color:#e6dfd2;line-height:1.7}
+.legal-body h2,.legal-body h3{font:21px Georgia,serif;color:#f2b845;margin:23px 0 8px}
+.legal-body a{color:#f2b845;text-decoration:underline}
+.legal-body p,.legal-body li{overflow-wrap:anywhere}
+.legal-body .notice{background:#30281c;padding:12px;border-left:3px solid #f2b845}
+
+    :is(#pays, #livraison) option {
+      background:var(--corviane-ink); color:var(--corviane-gold);
+    }
+    @supports (appearance: base-select) {
+      :is(#pays, #livraison) { appearance:base-select; }
+      :is(#pays, #livraison)::picker(select) {
+        appearance:base-select;
+        background:var(--corviane-ink); color:var(--corviane-gold);
+        border:1px solid var(--corviane-gold); border-radius:8px;
+      }
+      :is(#pays, #livraison)::picker(select) {
+        position-area:block-end span-inline-end;
+        position-try-fallbacks:none;
+      }
+      :is(#pays, #livraison) option { padding:10px 14px; }
+      :is(#pays, #livraison) option:is(:hover, :focus, :checked) {
+        background:var(--corviane-gold); color:var(--corviane-ink);
+      }
+    }
+</style>
+</head>
+<body>
+<header class="checkout-header"><a href="/" style="display:block;margin-bottom:.8rem;color:var(--corviane-gold)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" style="vertical-align:-.2em"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg> Accueil</a><a aria-label="CORVIANE, retour à la boutique" class="checkout-brand" href="index.html">CORVIANE</a><div class="checkout-brand-sub">VOTRE BOUTIQUE EN LIGNE</div></header>
+<main class="checkout-page">
+<h1>Finaliser ma commande</h1>
+<p class="checkout-intro">Renseignez vos coordonnées et consultez votre récapitulatif. Les paiements ne sont pas encore activés.</p>
+<div class="checkout-layout">
+<section class="checkout-panel">
+<h2>Informations de livraison</h2>
+<form id="checkoutForm">
+<div class="checkout-row">
+<div class="checkout-field"><label for="prenom">Prénom *</label><input autocomplete="given-name" id="prenom" name="prenom" required=""/></div>
+<div class="checkout-field"><label for="nom">Nom *</label><input autocomplete="family-name" id="nom" name="nom" required=""/></div>
+</div>
+<div class="checkout-field"><label for="email">Adresse e-mail *</label><input autocomplete="email" id="email" name="email" required="" type="email"/></div>
+<div class="checkout-field"><label for="telephone">Téléphone *</label><input autocomplete="tel" id="telephone" name="telephone" required="" type="tel"/></div>
+<div class="checkout-field"><label for="adresse">Rue et numéro *</label><input autocomplete="street-address" id="adresse" name="adresse" required=""/></div>
+<div class="checkout-row">
+<div class="checkout-field"><label for="codePostal">Code postal *</label><input autocomplete="postal-code" id="codePostal" name="codePostal" required=""/></div>
+<div class="checkout-field"><label for="ville">Ville *</label><input autocomplete="address-level2" id="ville" name="ville" required=""/></div>
+</div>
+<div class="checkout-field"><label for="pays">Pays de livraison *</label><select id="pays" name="pays" required=""><option value="BE">Belgique</option><option value="FR">France</option><option value="NL">Pays-Bas</option><option value="DE">Allemagne</option><option value="LU">Luxembourg</option></select></div>
+<div class="checkout-field"><label for="livraison">Mode de livraison</label><select id="livraison" name="livraison"><option value="standard">Livraison standard</option></select></div>
+<div class="checkout-payment-info">Paiement en préparation : aucune somme ne sera prélevée et aucune commande ne sera enregistrée pour le moment.</div>
+<div class="checkout-field"><label class="checkout-consent"><input id="conditions" required="" type="checkbox"/><span>J’ai lu et j’accepte les <a href="#legal-cgv">conditions générales de vente</a> *</span></label></div>
+<button class="checkout-button" disabled="" id="commander" type="submit">Vérifier mon récapitulatif</button>
+<p class="checkout-note" id="paymentNotice">Vous pouvez vérifier vos informations. Les commandes et paiements ne sont pas encore ouverts.</p>
+<p aria-live="polite" id="checkoutMessage" role="status"></p><div class="checkout-preview" hidden="" id="preview"></div>
+</form>
+</section>
+<aside class="checkout-panel">
+<h2>Récapitulatif de commande</h2><div id="checkoutArticles"></div>
+<div class="checkout-summary-line"><span>Sous-total</span><strong id="sousTotal">0,00 €</strong></div>
+<div class="checkout-summary-line"><span>Livraison</span><strong id="livraisonPrix">À calculer</strong></div>
+<div class="checkout-summary-line checkout-total"><span>Sous-total des articles</span><span id="total">À confirmer</span></div>
+<p class="checkout-note">Montant indicatif, hors frais de livraison. Aucun paiement ou achat ne sera effectué.</p>
+</aside>
+</div>
+<a class="checkout-back" href="catalogue-aw/boutique.html">← Retour à la boutique</a>
+<section aria-label="Informations légales" class="legal-wrap"><h2>Informations légales CORVIANE</h2><details id="legal-mentions"><summary>Mentions légales</summary><div class="legal-body"><h1>Mentions légales</h1><p class="notice"><strong>Document préparatoire :</strong> les modalités de livraison, de paiement et les informations techniques restent à valider avant la mise en vente. Les informations affichées ne constituent pas une validation juridique définitive.</p><h2>Identification de l’éditeur</h2><p>Vendeur : <strong>Hakan Yüksel, entrepreneur individuel</strong>, exerçant sous le nom commercial CORVIANE.<br/>Siège / adresse professionnelle : <strong>Chaussée de Charleroi 182, 5000 Namur, Belgique</strong>.<br/>Numéro BCE / TVA : <strong>BE 0837.098.914</strong>.<br/>Contact : <a href="mailto:contact@corviane.eu">contact@corviane.eu</a> · Service après-vente (de 9 h à 17 h) : <strong>+32 485 54 88 72</strong>.</p><h2>Activité</h2><p>CORVIANE est une enseigne de commerce général spécialisée dans la vente à distance d’une large gamme de produits destinés aux particuliers et aux professionnels, notamment dans les domaines de la maison, de l’habitat, de l’équipement, de l’outillage, de l’entretien, de la mode, des accessoires, des loisirs et des articles du quotidien. CORVIANE propose des produits issus de différentes catégories commerciales, avec une offre susceptible d’évoluer selon les besoins du marché et les partenariats fournisseurs. Les produits effectivement proposés, leur prix total TTC et les conditions de livraison sont indiqués avant la conclusion d’une commande.</p><h2>Hébergement et services techniques</h2><p>Hébergement du site : <strong>Prestataire d’hébergement et coordonnées à renseigner avant la publication du site</strong>. Prestataire de paiement envisagé : Mollie, sous réserve de l’activation effective du service.</p><h2>Service après-vente et réclamations</h2><p>Pour toute question ou réclamation : <a href="mailto:sav@corviane.eu">sav@corviane.eu</a>. En cas de litige de consommation non résolu, le consommateur peut consulter le <a href="https://mediationconsommateur.be/">Service de Médiation pour le Consommateur</a>.</p><p>Service après-vente : <a href="mailto:sav@corviane.eu">sav@corviane.eu</a></p></div></details><details id="legal-cgv"><summary>Conditions générales de vente</summary><div class="legal-body"><h1>Conditions générales de vente</h1><p class="notice"><strong>Document préparatoire :</strong> les modalités de livraison, de paiement et les informations techniques restent à valider avant la mise en vente. Les informations affichées ne constituent pas une validation juridique définitive.</p><p>Version préparatoire du 21 novembre 2026 — ventes à des consommateurs, sous réserve d’adaptation aux produits réellement commercialisés et aux pays desservis.</p><h2>1. Vendeur et contact</h2><p>Vendeur : <strong>Hakan Yüksel, entrepreneur individuel</strong>, exerçant sous le nom commercial CORVIANE.<br/>Siège / adresse professionnelle : <strong>Chaussée de Charleroi 182, 5000 Namur, Belgique</strong>.<br/>Numéro BCE / TVA : <strong>BE 0837.098.914</strong>.<br/>Contact : <a href="mailto:contact@corviane.eu">contact@corviane.eu</a> · Service après-vente (de 9 h à 17 h) : <strong>+32 485 54 88 72</strong>.</p><h2>2. Produits et informations</h2><p>Les caractéristiques essentielles, la disponibilité, les restrictions éventuelles et le prix TTC sont présentés sur la fiche produit. Les photographies illustratives ne remplacent pas la description contractuelle. Toute restriction particulière sera indiquée avant commande.</p><h2>3. Prix et frais</h2><p>Les prix affichés sont en euros, taxes comprises selon le régime applicable. Les frais de livraison, les options et le montant total sont communiqués avant la validation définitive. Aucun supplément non annoncé ne sera ajouté.</p><h2>4. Commande et paiement</h2><p>Le client vérifie son panier, ses coordonnées, le mode de livraison et le montant total avant de confirmer une commande avec obligation de paiement. Les paiements seront traités par un prestataire sécurisé une fois le service activé. Une commande n’est pas considérée comme payée sans confirmation du prestataire. Un accusé de réception et la confirmation du contrat seront adressés sur un support durable.</p><h2>5. Disponibilité et livraison</h2><p>La disponibilité doit être confirmée avant paiement. Les zones, options de livraison, coûts et délais estimés sont présentés avant commande. En l’absence d’accord spécifique, les obligations légales applicables aux délais de livraison restent pleinement applicables. Les risques sont transférés conformément à la loi, en principe lors de la prise de possession physique par le consommateur ou son tiers désigné.</p><h2>6. Droit de rétractation</h2><p>Pour les achats à distance éligibles, le consommateur dispose en principe de <strong>14 jours calendrier à compter de la réception du bien</strong> pour notifier sa décision de se rétracter sans justification. Il peut utiliser le <a href="#legal-retractation">formulaire type</a> ou envoyer une déclaration dénuée d’ambiguïté à <a href="mailto:retours@corviane.eu">retours@corviane.eu</a>. Après notification, le bien doit être renvoyé dans les 14 jours. Les frais directs de retour sont à la charge du client si cette information lui a été donnée avant achat, sauf erreur du vendeur ou autre obligation légale. Le remboursement intervient selon les délais et modalités légaux, y compris les frais de livraison standard initiaux lorsqu’ils sont dus ; le vendeur peut, dans les conditions légales, différer le remboursement jusqu’à réception du bien ou preuve de son expédition.</p><p>Des exceptions légales existent, notamment pour certains biens personnalisés, périssables ou scellés pour raisons d’hygiène après descellement. Toute exception applicable sera clairement signalée avant l’achat ; elle ne peut être généralisée à l’ensemble des produits.</p><h2>7. Garantie légale</h2><p>Les consommateurs bénéficient de la garantie légale de conformité, en principe de <strong>deux ans pour les biens neufs</strong>. Cette garantie s’exerce contre le vendeur et n’est pas supprimée par une garantie commerciale ou par un fournisseur tiers. Contact : <a href="mailto:sav@corviane.eu">sav@corviane.eu</a>.</p><h2>8. Réclamations, retours et remboursements</h2><p>Les modalités pratiques sont expliquées dans <a href="#legal-retours">Livraison et retours</a>. Une demande de retour via le formulaire du site n’est pas le seul moyen d’exercer un droit légal : un e-mail explicite suffit pour la rétractation. Les produits défectueux sont traités selon la garantie légale, indépendamment du délai de rétractation.</p><h2>9. Données personnelles</h2><p>Les données nécessaires à la commande et au service après-vente sont traitées conformément à la <a href="#legal-confidentialite">politique de confidentialité</a>. Les données bancaires sont traitées par le prestataire de paiement et non conservées dans le code de la boutique.</p><h2>10. Litiges</h2><p>Les dispositions impératives protégeant le consommateur restent applicables, y compris en cas de vente transfrontalière. Une réclamation peut être adressée à <a href="mailto:sav@corviane.eu">sav@corviane.eu</a>. Le <a href="https://mediationconsommateur.be/">Service de Médiation pour le Consommateur</a> peut être consulté selon ses conditions de compétence. Aucune clause n’impose au consommateur de renoncer à ses droits légaux.</p></div></details><details id="legal-retours"><summary>Livraison, retours et remboursements</summary><div class="legal-body"><h1>Livraison, retours et remboursements</h1><p class="notice"><strong>Document préparatoire :</strong> les modalités de livraison, de paiement et les informations techniques restent à valider avant la mise en vente. Les informations affichées ne constituent pas une validation juridique définitive.</p><h2>Livraison</h2><p>Les destinations effectivement desservies, deux options de livraison pour les consommateurs en Belgique lorsque la loi l’exige, les tarifs et les délais estimés devront être affichés avant la validation de la commande. <strong>[TRANSPORTEURS, OPTIONS, PAYS, TARIFS ET DÉLAIS À COMPLÉTER]</strong>. Aucune promesse de livraison ne doit être affichée avant accord avec le transporteur ou fournisseur.</p><h2>Rétractation de 14 jours</h2><p>Pour les biens éligibles, notifiez votre décision dans les 14 jours suivant la réception à <a href="mailto:retours@corviane.eu">retours@corviane.eu</a>, ou utilisez le <a href="#legal-retractation">formulaire type de rétractation</a>. Renvoyez ensuite le produit dans les 14 jours suivant votre notification, selon les instructions communiquées. Les frais directs de retour sont normalement à votre charge lorsqu’ils ont été annoncés avant l’achat, sauf obligation contraire.</p><h2>Remboursement</h2><p>Le remboursement comprend les sommes dues en vertu de la loi, notamment les frais de livraison standard initiaux lorsque leur remboursement est obligatoire. Il est effectué par le moyen de paiement initial, sauf accord exprès contraire, sans frais pour le consommateur. Il peut être différé légalement jusqu’à récupération du produit ou réception d’une preuve de renvoi.</p><h2>Produit défectueux ou erreur de livraison</h2><p>Contactez <a href="mailto:sav@corviane.eu">sav@corviane.eu</a>. La garantie légale de conformité et les règles de prise en charge des frais correspondants s’appliquent indépendamment du droit de rétractation.</p><h2>Adresse de retour</h2><p><strong>Adresse administrative du vendeur : Chaussée de Charleroi 182, 5000 Namur, Belgique. Avant tout renvoi, demandez les instructions à retours@corviane.eu ; l’adresse logistique de retour peut différer selon le produit.</strong>. Une demande peut aussi être préparée via <a href="mailto:retours@corviane.eu">notre page de retour</a> une fois le service activé.</p></div></details><details id="legal-confidentialite"><summary>Protection des données personnelles</summary><div class="legal-body"><h1>Politique de confidentialité</h1><p class="notice"><strong>Document préparatoire :</strong> les modalités de livraison, de paiement et les informations techniques restent à valider avant la mise en vente. Les informations affichées ne constituent pas une validation juridique définitive.</p><h2>Responsable du traitement</h2><p>Vendeur : <strong>Hakan Yüksel, entrepreneur individuel</strong>, exerçant sous le nom commercial CORVIANE.<br/>Siège / adresse professionnelle : <strong>Chaussée de Charleroi 182, 5000 Namur, Belgique</strong>.<br/>Numéro BCE / TVA : <strong>BE 0837.098.914</strong>.<br/>Contact : <a href="mailto:contact@corviane.eu">contact@corviane.eu</a> · Service après-vente (de 9 h à 17 h) : <strong>+32 485 54 88 72</strong>.</p><h2>Données traitées</h2><p>Pour préparer et exécuter les commandes : identité, coordonnées, adresse de livraison, articles, montants, références et états de paiement, correspondances de service client, demandes de retour. Les données techniques de sécurité et journaux du serveur peuvent également être traités. Les données de carte sont prises en charge par le prestataire de paiement.</p><h2>Finalités et bases juridiques</h2><p>Exécution du contrat (commande, livraison, SAV), obligations légales (facturation et comptabilité), intérêt légitime proportionné (sécurité et prévention de la fraude) et consentement lorsqu’il est requis (prospection non nécessaire, cookies non essentiels).</p><h2>Destinataires et sous-traitants</h2><p>Hébergeur <strong>à confirmer</strong>, prestataire de paiement Mollie si activé, messagerie Namecheap Private Email, transporteurs et fournisseurs nécessaires à la livraison, comptable et prestataires techniques contractuellement autorisés. Les transferts éventuels hors EEE doivent être vérifiés et encadrés légalement.</p><h2>Durées de conservation</h2><p>Les données ne sont conservées que le temps nécessaire aux finalités et aux obligations légales. <strong>Les durées détaillées par catégorie seront indiquées avant l’activation de la collecte de commandes</strong>. Les durées comptables légales applicables prévalent.</p><h2>Droits des personnes</h2><p>Vous pouvez demander accès, rectification, effacement lorsque applicable, limitation, opposition, portabilité dans les conditions légales, et retirer votre consentement à tout moment lorsqu’il constitue la base du traitement. Contact : <a href="mailto:contact@corviane.eu">contact@corviane.eu</a>. Vous pouvez introduire une plainte auprès de l’<a href="https://www.autoriteprotectiondonnees.be/">Autorité de protection des données</a> en Belgique.</p><h2>Cookies et stockage local</h2><p>Le panier et les favoris peuvent être conservés localement dans votre navigateur pour assurer les fonctionnalités demandées. Les cookies de mesure d’audience, publicité ou marketing non essentiels nécessiteront, le cas échéant, un mécanisme de consentement approprié avant leur activation. <strong>Un inventaire technique des cookies, traceurs et services externes sera publié avant leur activation</strong>.</p><h2>Sécurité</h2><p>Les accès aux données doivent être limités et protégés, et les échanges réalisés en HTTPS. Les informations sensibles et secrets de paiement ne doivent jamais être publiés dans le dépôt GitHub.</p></div></details><details id="legal-retractation"><summary>Formulaire de rétractation</summary><div class="legal-body"><h1>Formulaire type de rétractation</h1><p class="notice"><strong>Document préparatoire :</strong> les modalités de livraison, de paiement et les informations techniques restent à valider avant la mise en vente. Les informations affichées ne constituent pas une validation juridique définitive.</p><p>À l’attention de : <strong>Hakan Yüksel, entrepreneur individuel — CORVIANE, Chaussée de Charleroi 182, 5000 Namur, Belgique</strong> · <a href="mailto:retours@corviane.eu">retours@corviane.eu</a>.</p><p>Je/nous (*) vous notifie/notifions (*) par la présente ma/notre (*) rétractation du contrat portant sur la vente du bien (*) ci-dessous :</p><p>Bien(s) : ________________________________________</p><p>Commandé(s) le (*) / reçu(s) le (*) : __________________</p><p>Nom du/des consommateur(s) : ______________________</p><p>Adresse du/des consommateur(s) : ____________________</p><p>Date : ________________</p><p>Signature (uniquement en cas de notification papier) : ________________</p><p>(*) Rayez la mention inutile.</p><p>Vous pouvez copier ce formulaire et l’envoyer par e-mail. Une déclaration claire de rétractation suffit également ; aucun compte client n’est requis.</p></div></details></section></main>
+<footer class="checkout-footer">© CORVIANE — Hakan Yüksel · BE 0837.098.914 · <a href="mailto:contact@corviane.eu">contact@corviane.eu</a> · <a href="#legal-cgv">CGV</a> · <a href="#legal-retours">Livraison et retours</a> · <a href="#legal-confidentialite">Confidentialité</a> · <a href="#legal-mentions">Mentions légales</a> · <a href="#legal-retractation">Rétractation</a></footer>
+<script>
+'use strict';
+// Pour GitHub Pages : remplacer l'URL ci-dessous par l'URL HTTPS publique du serveur CORVIANE.
+// Laisser vide tant que le serveur n'est pas déployé : aucun paiement ne sera déclenché.
+const CORVIANE_API_URL = '';
+const $ = id => document.getElementById(id);
+const form=$('checkoutForm'), commander=$('commander'), message=$('checkoutMessage');
+const euros=n=>new Intl.NumberFormat('fr-BE',{style:'currency',currency:'EUR'}).format(n);
+function loadArray(key){try{const x=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(x)?x:[]}catch{return []}}
+const panier = [], catalogue = [];
+let awLines=[], awReady=true, awValid=true, awQuote, awTotal=null;
+const articles=$('checkoutArticles');
+let panierValide=panier.length>0&&catalogue.length>0;
+let montant=0;
+if(!panier.length)articles.textContent='Votre panier est vide.';
+for(const item of panier){
+ const p=catalogue.find(x=>x.id===item?.id), qty=item?.qty, prix=Number(p?.price);
+ if(!p||!Number.isSafeInteger(qty)||qty<1||qty>99||!Number.isFinite(prix)||prix<0){panierValide=false;continue;}
+ montant+=prix*qty;
+ const ligne=document.createElement('div');ligne.className='checkout-summary-line';
+ const nom=document.createElement('span');nom.textContent=String(p.name)+' × '+qty;
+ const valeur=document.createElement('strong');valeur.textContent=euros(prix*qty);
+ ligne.append(nom,valeur);articles.appendChild(ligne);
+}
+if(!Number.isFinite(montant))panierValide=false;
+$('sousTotal').textContent=euros(Number.isFinite(montant)?montant:0);
+$('livraisonPrix').textContent='Non calculée';
+$('total').textContent=euros(Number.isFinite(montant)?montant:0);
+function refreshAwTotals(){
+ const subtotal=montant+awLines.reduce((sum,line)=>sum+line.product.cents*line.quantity/100,0);
+ $('sousTotal').textContent=euros(subtotal);
+ awTotal=null;
+ let shipping='Non calculée';
+ if(!awReady)shipping='Calcul en cours';
+ else if(!awValid)shipping='Catalogue indisponible ou articles à vérifier';
+ else if(awLines.length){
+   if($('pays').value!=='BE')shipping='Tarif à confirmer pour cette destination';
+   else {
+     const quote=awQuote(awLines);
+     if(quote.shipping===null)shipping='Port à vérifier';
+     else {
+       shipping=euros(quote.shipping/100)+(quote.surcharge?' + '+euros(quote.surcharge/100)+' de supplément':'');
+       if(panier.length)shipping+=' pour le catalogue. Port des autres articles à confirmer.';
+       else awTotal=subtotal+(quote.shipping+quote.surcharge)/100;
+     }
+   }
+ }
+ $('livraisonPrix').textContent=shipping;
+ $('total').textContent=awTotal!==null?euros(awTotal):awLines.length||!awReady||!awValid?'À confirmer':euros(montant);
+}
+async function loadAwBasket(){
+ const selection=loadArray('corviane_aw_test_basket');
+ if(!selection.length)return;
+ awReady=false;refreshAwTotals();updateButton();
+ try{
+   const response=await fetch('./catalogue-aw/produits.json');
+   if(!response.ok)throw Error();
+   const bySku=new Map((await response.json()).map(p=>[p.sku,p]));
+   ({belgianQuote:awQuote}=await import('./catalogue-aw/pricing.mjs'));
+   const seen=new Set();
+   for(const entry of selection){
+     const [sku,quantity]=Array.isArray(entry)?entry:[], product=bySku.get(sku);
+     if(seen.has(sku)||!product?.active||!Number.isSafeInteger(quantity)||quantity<1||quantity>Math.min(99,product.stock)){
+       awValid=false;continue;
+     }
+     seen.add(sku);awLines.push({product,quantity});
+   }
+   if(awLines.length&&!panier.length)articles.replaceChildren();
+   for(const {product,quantity} of awLines){
+     const row=document.createElement('div');row.className='checkout-summary-line';
+     const name=document.createElement('span');name.textContent=product.name+' × '+quantity;
+     const price=document.createElement('strong');price.textContent=euros(product.cents*quantity/100);
+     row.append(name,price);articles.append(row);
+   }
+ }catch{awValid=false;}
+ finally{
+   awReady=true;
+   if(!awValid)message.textContent='Vérifiez les articles du catalogue dans le panier.';
+   else if(awLines.length&&!panier.length)message.textContent='';
+   refreshAwTotals();updateButton();
+ }
+}
+function fieldsValid(){return [...form.querySelectorAll('input[required]:not([type=checkbox]),select[required]')].every(x=>x.checkValidity()&&String(x.value).trim()!=='');}
+function updateButton(){commander.disabled=!awReady||!awValid||(panier.length>0&&!panierValide)||(!panierValide&&!awLines.length)||(awLines.length>0&&awTotal===null)||!$('conditions').checked||!fieldsValid();}
+if(!panierValide){message.textContent='Votre panier est vide ou incomplet. Retournez au catalogue pour sélectionner des articles.';message.className='checkout-error';}
+form.addEventListener('input',updateButton);
+form.addEventListener('change',()=>{refreshAwTotals();updateButton();});
+form.addEventListener('submit',e=>{
+ e.preventDefault();
+ if(commander.disabled||!form.reportValidity()||!$('conditions').checked)return;
+ const client=[$('prenom').value.trim(),$('nom').value.trim()].join(' ');
+ const recap=$('preview');
+ recap.replaceChildren();
+ const titre=document.createElement('strong');titre.textContent='Récapitulatif de préparation — aucune commande enregistrée';
+ const texte=document.createElement('p');texte.textContent='Client : '+client+' | Pays : '+$('pays').selectedOptions[0].textContent+' | Articles : '+(awTotal===null?euros(montant)+'. Livraison à confirmer.':euros(awTotal)+' livraison comprise.');
+ const info=document.createElement('p');info.textContent='Aucun paiement n’a été effectué. Vos coordonnées ne sont pas transmises ni enregistrées par CORVIANE.';
+ recap.append(titre,texte,info);recap.hidden=false;recap.scrollIntoView({behavior:'smooth',block:'nearest'});
+});
+updateButton();
+const checkoutCatalogueReady = loadAwBasket();
+if (location.hostname.endsWith('.vercel.app') && new URLSearchParams(location.search).has('commande')) {
+  Promise.all([import('./orders/checkout-preview.mjs'), checkoutCatalogueReady]).then(([{ connect }]) => connect({
+    form, commander, message, euros, loadArray, currentLines: () => awLines,
+    ready: () => awReady && awValid, refresh: refreshAwTotals
+  })).catch(() => { message.textContent = 'Module de commande de test indisponible.'; });
+}
+</script>
+</body>
+</html>
