@@ -84,6 +84,10 @@ body{background:radial-gradient(ellipse at 85% 0%,#302416 0%,#111 48%,#080808 10
         background:var(--corviane-ink); color:var(--corviane-gold);
         border:1px solid var(--corviane-gold); border-radius:8px;
       }
+      #livraison::picker(select) {
+        position-area:block-end span-inline-end;
+        position-try-fallbacks:none;
+      }
       :is(#pays, #livraison) option { padding:10px 14px; }
       :is(#pays, #livraison) option:is(:hover, :focus, :checked) {
         background:var(--corviane-gold); color:var(--corviane-ink);
