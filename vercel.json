@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/checkout-aw.html",
+      "destination": "/commande-privee.html",
+      "permanent": false
+    }
+  ]
+}
