@@ -212,7 +212,13 @@ function renderBasket() {
     line.append(remove);
     return line;
   }));
-  find('checkout-link').hidden = !lines.length;
+  const checkoutLink = find('checkout-link');
+  checkoutLink.hidden = !lines.length;
+  const checkoutUrl = new URL('https://corviane-paiement.vercel.app/checkout-aw.html');
+  checkoutUrl.hash = new URLSearchParams({
+    panier: JSON.stringify(lines.map(({ product, quantity }) => [product.sku, quantity]))
+  }).toString();
+  checkoutLink.href = checkoutUrl.href;
   const amount = belgianQuote(lines);
   find('total').textContent = amount.shipping === null
     ? `${t('subtotal')} ${euro(amount.subtotal)} · ${t('quote')}`
