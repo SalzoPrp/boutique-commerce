@@ -65,7 +65,10 @@ export default async function handler(req, res) {
   const key = process.env.CORVIANE_LIVE_MOLLIE_API_KEY;
   const database = process.env.CORVIANE_LIVE_DATABASE_URL;
   const databaseKey = process.env.CORVIANE_LIVE_DATABASE_KEY;
-  if (process.env.VERCEL_ENV !== 'preview' || process.env.VERCEL_GIT_COMMIT_REF !== 'commandes-production-preparation' || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET ||
+  const checkoutOrigin = process.env.CORVIANE_CHECKOUT_ORIGIN;
+  if (process.env.VERCEL_ENV !== 'production' ||
+      !/^https:\/\/[a-z0-9.-]+$/.test(checkoutOrigin || '') ||
+      checkoutOrigin !== 'https://' + req.headers.host ||
       !process.env.CORVIANE_RESEND_KEY || !key?.startsWith('live_') ||
       !database?.startsWith('https://') || !databaseKey) {
     return res.status(503).json({ error: 'Les commandes ne sont pas encore ouvertes.' });
@@ -136,10 +139,8 @@ export default async function handler(req, res) {
     if (process.env.CORVIANE_LIVE_ORDERS_ENABLED !== '1') {
       return res.status(503).json({ error: 'Les commandes ne sont pas encore ouvertes.' });
     }
-    const host = req.headers.host;
-    const hosts = [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL].filter(Boolean);
-    if (!hosts.includes(host) || req.headers.origin !== 'https://' + host) {
-      return res.status(403).json({ error: 'Ouvrez la commande depuis son espace privé.' });
+    if (req.headers.origin !== checkoutOrigin) {
+      return res.status(403).json({ error: 'Ouvrez la commande depuis la page de paiement CORVIANE.' });
     }
     const { attempt, expectedTotal } = req.body ?? {};
     const details = prepareOrder(req.body ?? {});
@@ -150,9 +151,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({ id: attempt, details }) });
     const order = await loadOrder(attempt);
     if (!order || !matchDetails(order.details, details)) return res.status(409).json({ error: 'La référence de commande est déjà utilisée.' });
-    const webhookUrl = new URL('/api/commande-privee?webhook=1', 'https://' + host);
-    const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
-    if (bypass) webhookUrl.searchParams.set('x-vercel-protection-bypass', bypass);
+    const webhookUrl = new URL('/api/commande-privee?webhook=1', checkoutOrigin);
     const amount = { currency: 'EUR', value: (details.quote.total / 100).toFixed(2) };
     if (!order.payment_id) {
       try {
@@ -170,7 +169,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           amount, description: 'CORVIANE — commande ' + attempt,
           metadata: { source, order: attempt },
-          redirectUrl: 'https://' + host + '/commande-privee.html?commande=' + attempt,
+          redirectUrl: new URL('/commande-privee.html?commande=' + attempt, checkoutOrigin).href,
           webhookUrl: webhookUrl.href
         })
       });
