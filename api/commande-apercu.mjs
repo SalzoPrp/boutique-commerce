@@ -61,8 +61,8 @@ function matchPayment(payment, order) {
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   const key = process.env.MOLLIE_API_KEY;
-  const database = process.env.CORVIANE_PREVIEW_DATABASE_URL;
-  const databaseKey = process.env.CORVIANE_PREVIEW_DATABASE_KEY;
+  const database = process.env.CORVIANE_PREVIEW_DATABASE_URL || process.env.CORVIANE_PREVIEW_SUPABASE_URL;
+  const databaseKey = process.env.CORVIANE_PREVIEW_DATABASE_KEY || process.env.CORVIANE_PREVIEW_SUPABASE_SERVICE_ROLE_KEY;
   if (process.env.VERCEL_ENV !== 'preview' || !key?.startsWith('test_') ||
       !database?.startsWith('https://') || !databaseKey) {
     return res.status(503).json({ error: 'Le stockage des commandes de test reste à configurer.' });
