@@ -254,7 +254,7 @@ form.addEventListener('submit',e=>{
 });
 updateButton();
 const checkoutCatalogueReady = loadAwBasket();
-if (location.hostname.endsWith('.vercel.app') && new URLSearchParams(location.search).has('commande')) {
+if (location.hostname.endsWith('.vercel.app') && (transferredBasket !== null || new URLSearchParams(location.search).has('commande'))) {
   Promise.all([import('./orders/checkout-preview.mjs'), checkoutCatalogueReady]).then(([{ connect }]) => connect({
     form, commander, message, euros, loadArray, currentLines: () => awLines,
     ready: () => awReady && awValid, refresh: refreshAwTotals
