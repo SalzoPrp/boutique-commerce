@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Statuts Mollie | CORVIANE</title>
+<style>
+body{max-width:40rem;margin:3rem auto;padding:0 1rem;font:1rem/1.6 system-ui}
+button{font:inherit;padding:.6rem 1rem;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+<h1>Test des statuts Mollie</h1>
+<p>Sur Mollie, choisis Échoué, Annulé ou Expiré, puis clique sur Continuez. Lance un nouveau test pour chaque statut.</p>
+<button id="start" type="button">Lancer un test Bancontact</button>
+<button id="check" type="button" hidden>Vérifier le statut</button>
+<p id="status" role="status"></p>
+</main>
+<script type="module">
+const start = document.querySelector('#start');
+const check = document.querySelector('#check');
+const status = document.querySelector('#status');
+const storageKey = 'corviane_mollie_status_test_id';
+const statuses = {
+  open: 'En attente (ouvert)',
+  pending: 'En attente',
+  authorized: 'Autorisé',
+  paid: 'Payé',
+  failed: 'Échoué',
+  canceled: 'Annulé',
+  expired: 'Expiré'
+};
+
+async function read(path, options) {
+  const response = await fetch(path, options);
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Test indisponible.');
+  return data;
+}
+
+start.onclick = async () => {
+  start.disabled = true;
+  try {
+    const { id, checkout } = await read('/api/mollie-statuts', { method: 'POST' });
+    sessionStorage.setItem(storageKey, id);
+    location.assign(checkout);
+  } catch (error) {
+    status.textContent = error.message;
+    start.disabled = false;
+  }
+};
+
+check.onclick = async () => {
+  check.disabled = true;
+  try {
+    const id = sessionStorage.getItem(storageKey);
+    if (!id) throw new Error('Lance un test depuis cet onglet.');
+    const result = await read('/api/mollie-test?id=' + encodeURIComponent(id));
+    status.textContent = 'Statut Mollie · ' + (statuses[result.status] || result.status);
+  } catch (error) {
+    status.textContent = error.message;
+  } finally {
+    check.disabled = false;
+  }
+};
+
+check.hidden = !sessionStorage.getItem(storageKey);
+if (!check.hidden && new URLSearchParams(location.search).has('retour')) check.onclick();
+</script>
+</body>
+</html>
