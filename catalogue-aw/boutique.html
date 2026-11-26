@@ -212,7 +212,13 @@ function renderBasket() {
     line.append(remove);
     return line;
   }));
-  find('checkout-link').hidden = !lines.length;
+  const checkoutLink = find('checkout-link');
+  const checkout = new URL('../commande-privee.html', location.href);
+  checkout.hash = new URLSearchParams({
+    panier: JSON.stringify(lines.map(({ product, quantity }) => [product.sku, quantity]))
+  }).toString();
+  checkoutLink.href = checkout.href;
+  checkoutLink.hidden = !lines.length;
   const amount = belgianQuote(lines);
   find('total').textContent = amount.shipping === null
     ? `${t('subtotal')} ${euro(amount.subtotal)} · ${t('quote')}`
