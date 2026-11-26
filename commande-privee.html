@@ -143,7 +143,26 @@ const CORVIANE_API_URL = '';
 const $ = id => document.getElementById(id);
 const form=$('checkoutForm'), commander=$('commander'), message=$('checkoutMessage');
 const euros=n=>new Intl.NumberFormat('fr-BE',{style:'currency',currency:'EUR'}).format(n);
-function loadArray(key){try{const x=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(x)?x:[]}catch{return []}}
+const transferredBasket = new URLSearchParams(location.hash.slice(1)).get('panier');
+function readTransferredBasket(raw) {
+ if (raw.length > 16384) return [];
+ try {
+  const lines = JSON.parse(raw);
+  if (!Array.isArray(lines) || !lines.length || lines.length > 100) return [];
+  const skus = new Set();
+  for (const line of lines) {
+   if (!Array.isArray(line) || line.length !== 2) return [];
+   const [sku, quantity] = line;
+   if (typeof sku !== 'string' || !sku || sku.length > 100 ||
+       skus.has(sku) || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99) return [];
+   skus.add(sku);
+  }
+  return lines;
+ } catch {
+  return [];
+ }
+}
+function loadArray(key){if(key==='corviane_aw_test_basket' && transferredBasket!==null)return readTransferredBasket(transferredBasket);try{const x=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(x)?x:[]}catch{return []}}
 const panier = [], catalogue = [];
 let awLines=[], awReady=true, awValid=true, awQuote, awTotal=null;
 const articles=$('checkoutArticles');
