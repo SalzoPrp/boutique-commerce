@@ -16,8 +16,7 @@ export function previewQuote(country, lines) {
   const band = shippingBands.get(country)?.find(([limit]) => grams <= limit);
   if (!band) return null;
 
-  // CORVIANE's customer rate for this weight range already includes VAT.
-  const fixedShipping = (country === 'NL' || country === 'LU') && grams > 3000 && grams <= 5000;
-  const shipping = fixedShipping ? 1100 : Math.round(band[1] * 1.21);
+  // Apply the provisional 21% VAT rate to the shipping band.
+  const shipping = Math.round(band[1] * 1.21);
   return { ...base, grams, shipping, total: base.subtotal + shipping + base.surcharge };
 }
