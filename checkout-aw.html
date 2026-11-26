@@ -214,7 +214,13 @@ form.addEventListener('submit',e=>{
  recap.append(titre,texte,info);recap.hidden=false;recap.scrollIntoView({behavior:'smooth',block:'nearest'});
 });
 updateButton();
-loadAwBasket();
+const checkoutCatalogueReady = loadAwBasket();
+if (location.hostname.endsWith('.vercel.app') && new URLSearchParams(location.search).has('commande')) {
+  Promise.all([import('./orders/checkout-preview.mjs'), checkoutCatalogueReady]).then(([{ connect }]) => connect({
+    form, commander, message, euros, loadArray, currentLines: () => awLines,
+    ready: () => awReady && awValid, refresh: refreshAwTotals
+  })).catch(() => { message.textContent = 'Module de commande de test indisponible.'; });
+}
 </script>
 </body>
 </html>
