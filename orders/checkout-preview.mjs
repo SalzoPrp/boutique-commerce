@@ -30,6 +30,37 @@ export function connect({ form, commander, message, euros, loadArray, currentLin
   get('paymentNotice').textContent = 'Votre commande de test sera enregistrée avant la redirection vers Mollie.';
   commander.textContent = 'Payer en mode test';
 
+  if (reference) {
+    for (const control of form.elements) control.disabled = true;
+    const articles = get('checkoutArticles');
+    articles.replaceChildren();
+    for (const id of ['sousTotal', 'livraisonPrix', 'total']) get(id).textContent = '—';
+    country.selectedIndex = -1;
+    get('paymentNotice').textContent = 'Récapitulatif de la commande enregistrée.';
+    document.querySelector('.checkout-intro').textContent = 'Consultez votre commande de test.';
+    message.classList.remove('checkout-error');
+    message.textContent = 'Chargement de la commande…';
+    read(api + '?commande=' + encodeURIComponent(reference)).then(order => {
+      country.value = order.country;
+      for (const article of order.articles) {
+        const row = document.createElement('div');
+        row.className = 'checkout-summary-line';
+        const name = document.createElement('span');
+        name.textContent = article.name + ' × ' + article.quantity;
+        const price = document.createElement('strong');
+        price.textContent = euros(article.unitCents * article.quantity / 100);
+        row.append(name, price);
+        articles.append(row);
+      }
+      get('sousTotal').textContent = euros(order.quote.subtotal / 100);
+      get('livraisonPrix').textContent = euros(order.quote.shipping / 100) +
+        (order.quote.surcharge ? ' + ' + euros(order.quote.surcharge / 100) + ' de supplément' : '');
+      get('total').textContent = euros(order.quote.total / 100);
+      message.textContent = 'Commande test ' + reference + ' · ' + statusLabels[order.status];
+    }).catch(error => { message.textContent = error.message; });
+    return;
+  }
+
   function render() {
     const lines = currentLines();
     quote = ready() && lines.length ? previewQuote(country.value, lines) : null;
@@ -80,9 +111,4 @@ export function connect({ form, commander, message, euros, loadArray, currentLin
 
   refresh();
   render();
-  if (reference) {
-    read(api + '?commande=' + encodeURIComponent(reference)).then(({ status }) => {
-      message.textContent = 'Commande test ' + reference + ' · ' + statusLabels[status];
-    }).catch(error => { message.textContent = error.message; });
-  }
 }

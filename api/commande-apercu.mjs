@@ -80,7 +80,8 @@ export default async function handler(req, res) {
       if (!uuid.test(id || '')) return res.status(400).json({ error: 'Référence invalide.' });
       const order = await loadOrder(id);
       if (!order) return res.status(404).json({ error: 'Commande de test introuvable.' });
-      return res.json({ status: order.payment_status });
+      const { country, quote, articles } = order.details;
+      return res.json({ status: order.payment_status, country, quote, articles });
     }
     if (req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée.' });
     if (req.query.webhook === '1') {
