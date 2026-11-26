@@ -74,19 +74,20 @@ body{background:radial-gradient(ellipse at 85% 0%,#302416 0%,#111 48%,#080808 10
 .legal-body p,.legal-body li{overflow-wrap:anywhere}
 .legal-body .notice{background:#30281c;padding:12px;border-left:3px solid #f2b845}
 
-    #pays option { background:var(--corviane-ink); color:var(--corviane-gold); }
-    @supports (appearance: base-select) and selector(::picker(select)) {
-      #pays, #pays::picker(select) { appearance:base-select; }
-      #pays::picker-icon { color:var(--corviane-gold); }
-      #pays::picker(select) {
+    :is(#pays, #livraison) option {
+      background:var(--corviane-ink); color:var(--corviane-gold);
+    }
+    @supports (appearance: base-select) {
+      :is(#pays, #livraison) { appearance:base-select; }
+      :is(#pays, #livraison)::picker(select) {
+        appearance:base-select;
         background:var(--corviane-ink); color:var(--corviane-gold);
         border:1px solid var(--corviane-gold); border-radius:8px;
       }
-      #pays option { padding:10px 14px; }
-      #pays option:hover, #pays option:focus-visible, #pays option:checked {
+      :is(#pays, #livraison) option { padding:10px 14px; }
+      :is(#pays, #livraison) option:is(:hover, :focus, :checked) {
         background:var(--corviane-gold); color:var(--corviane-ink);
       }
-      #pays option::checkmark { color:currentColor; }
     }
 </style>
 </head>
