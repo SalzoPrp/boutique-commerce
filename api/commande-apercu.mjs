@@ -1,3 +1,4 @@
+import { paidConfirmation } from '../orders/production/confirmation.mjs';
 import { readFileSync } from 'node:fs';
 import { previewQuote } from '../catalogue-aw/mollie-test-shipping.mjs';
 
@@ -5,7 +6,7 @@ const products = new Map(JSON.parse(readFileSync(
   new URL('../catalogue-aw/produits.json', import.meta.url), 'utf8'
 )).map(product => [product.sku, product]));
 const payments = 'https://api.mollie.com/v2/payments';
-const source = 'corviane-order-preview';
+const source = 'corviane-integrated-test';
 const countryCodes = new Set(['BE', 'FR', 'DE', 'LU', 'NL']);
 const statuses = new Set(['open', 'pending', 'authorized', 'paid', 'failed', 'canceled', 'expired']);
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
@@ -63,7 +64,9 @@ export default async function handler(req, res) {
   const key = process.env.MOLLIE_API_KEY;
   const database = process.env.CORVIANE_PREVIEW_DATABASE_URL || process.env.CORVIANE_PREVIEW_SUPABASE_URL;
   const databaseKey = process.env.CORVIANE_PREVIEW_DATABASE_KEY || process.env.CORVIANE_PREVIEW_SUPABASE_SERVICE_ROLE_KEY;
-  if (process.env.VERCEL_ENV !== 'preview' || !key?.startsWith('test_') ||
+  if (process.env.VERCEL_GIT_COMMIT_REF !== 'test-resend-corviane' ||
+      !process.env.CORVIANE_RESEND_KEY || !process.env.VERCEL_AUTOMATION_BYPASS_SECRET ||
+      process.env.VERCEL_ENV !== 'preview' || !key?.startsWith('test_') ||
       !database?.startsWith('https://') || !databaseKey) {
     return res.status(503).json({ error: 'Le stockage des commandes de test reste à configurer.' });
   }
@@ -101,6 +104,26 @@ export default async function handler(req, res) {
           body: JSON.stringify({ payment_id: id, payment_status: payment.status }) });
         if (!rows.length) return res.status(409).end();
       }
+      const saved = payment.status === 'paid' ? await loadOrder(orderId) : null;
+      if (saved?.payment_status === 'paid' && saved.details.customer.email === 'contact@corviane.eu') {
+        const message = paidConfirmation(saved);
+        const result = await json('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + process.env.CORVIANE_RESEND_KEY,
+            'Content-Type': 'application/json',
+            'Idempotency-Key': 'corviane-mollie-resend-integrated-test-20261126'
+          },
+          body: JSON.stringify({
+            from: 'CORVIANE <commandes@corviane.eu>',
+            to: ['contact@corviane.eu'],
+            reply_to: 'contact@corviane.eu',
+            subject: '[TEST MOLLIE] ' + message.subject,
+            text: 'Paiement simulé. Aucun débit réel.\n\n' + message.text
+          })
+        });
+        if (!result.id) throw new Error('Confirmation test indisponible.');
+      }
       return res.status(200).end();
     }
 
@@ -111,7 +134,7 @@ export default async function handler(req, res) {
     }
     const { attempt, expectedTotal } = req.body ?? {};
     const details = prepareOrder(req.body ?? {});
-    if (!uuid.test(attempt || '') || !details) return res.status(400).json({ error: 'Vérifiez votre panier et vos coordonnées.' });
+    if (!uuid.test(attempt || '') || !details || details.customer.email !== 'contact@corviane.eu') return res.status(400).json({ error: 'Vérifiez votre panier et vos coordonnées.' });
     if (expectedTotal !== details.quote.total) return res.status(409).json({ error: 'Le total a changé. Rechargez le récapitulatif.' });
 
     await json(table, { method: 'POST', headers: { ...dbHeaders, Prefer: 'resolution=ignore-duplicates,return=representation' },
@@ -129,7 +152,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           amount, description: 'CORVIANE — commande test ' + attempt,
           metadata: { source, order: attempt },
-          redirectUrl: 'https://' + host + '/checkout-aw.html?commande=' + attempt,
+          redirectUrl: 'https://' + host + '/checkout-test-resend.html?commande=' + attempt,
           webhookUrl: webhookUrl.href
         })
       });
