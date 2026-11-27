@@ -155,6 +155,7 @@ export default async function handler(req, res) {
         method: 'POST', headers: { ...mollieHeaders, 'Idempotency-Key': attempt },
         body: JSON.stringify({
           amount, description: 'CORVIANE — commande test ' + attempt,
+          method: 'bancontact',
           metadata: { source, order: attempt },
           redirectUrl: 'https://' + host + '/checkout-test-resend.html?commande=' + attempt,
           webhookUrl: webhookUrl.href
